@@ -11,6 +11,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "3.398.0",
     "@types/jest": "^29.5.4",
     "@types/node": "20.5.4",
     "@types/prettier": "2.7.3",
