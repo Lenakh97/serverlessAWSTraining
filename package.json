@@ -12,7 +12,10 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "3.398.0",
+    "@aws-sdk/client-rekognition": "3.410.0",
     "@aws-sdk/client-s3": "3.400.0",
+    "@aws-sdk/util-dynamodb": "3.410.0",
+    "@nordicsemiconductor/from-env": "2.0.0",
     "@types/jest": "^29.5.4",
     "@types/node": "20.5.4",
     "@types/prettier": "2.7.3",
