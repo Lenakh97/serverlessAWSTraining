@@ -10,7 +10,11 @@ import {
   PutObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
-var fs = require("fs");
+import { Readable } from "stream";
+import type * as sharpType from "sharp";
+import * as sharpModule from "../layers/sharp/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
+
+export const sharp = sharpModule as typeof sharpType;
 
 const RekogClient = new RekognitionClient({ region: "REGION" });
 const db = new DynamoDBClient({});
@@ -36,27 +40,32 @@ export const handler = (ourBucket: string, ourKey: string) => {
 export const generateThumb = async (ourBucket: string, ourKey: string) => {
   // Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
-  // Define upload and download paths
-  // Download file from s3 and store it in Lambda /tmp storage
-  const image = s3.send(
+
+  // ??? Define upload and download paths
+
+  // Download file from s3 and store it in Lambda /tmp storage ??
+  const image = await s3.send(
     new GetObjectCommand({
       Bucket: Bucket,
       Key: safeKey,
     })
   );
-  fs.writeFile("tmp/img.jpg");
 
-  // Create thumbnail using Pillow library
-  const thumbNail = "";
+  const stream = image.Body as Readable;
+  const buffer = await streamToBuffer(stream);
+
+  const resizedImage = sharp(buffer).resize(200).toBuffer();
+
   //Upload the thumbnail to the thumbnail bucket
   await s3.send(
     new PutObjectCommand({
-      Body: thumbNail,
+      Body: resizedImage,
       Bucket: ThumbBucket,
       Key: safeKey,
     })
   );
-  //Clean up files in /tmp so we don't run out of space
+
+  // ?? Clean up files in /tmp so we don't run out of space
 };
 
 export const rekFunction = async (ourBucket: string, ourKey: string) => {
@@ -111,3 +120,11 @@ export const rekFunction = async (ourBucket: string, ourKey: string) => {
 
 export const replaceSubstringWithColon = (txt: string): string =>
   txt.replace("%3A", ":");
+
+export const streamToBuffer = async (stream: Readable): Promise<Buffer> =>
+  new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.once("end", () => resolve(Buffer.concat(chunks)));
+    stream.once("error", reject);
+  });

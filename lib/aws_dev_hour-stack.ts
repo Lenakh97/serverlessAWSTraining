@@ -55,6 +55,12 @@ export class AwsDevHourStack extends Stack {
         "A layer to enable the PIL library in our Rekognition Lambda",
     });
 
+    const sharpLayer = new lambda.LayerVersion(this, "sharp-layer", {
+      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      code: lambda.Code.fromAsset("layers/sharp"),
+      description: "Uses a 3rd party library called Sharp o resize images.",
+    });
+
     // =====================================================================================
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
@@ -64,7 +70,7 @@ export class AwsDevHourStack extends Stack {
       handler: "index.handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
-      layers: [layer],
+      layers: [layer, sharpLayer],
       environment: {
         TABLE: table.tableName,
         BUCKET: imageBucket.bucketName,
