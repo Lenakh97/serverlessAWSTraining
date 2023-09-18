@@ -67,7 +67,7 @@ export class AwsDevHourStack extends Stack {
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
-      entry: path.join(__dirname, `../../rekognitionlambda/index.ts`),
+      entry: path.join(__dirname, `../rekognitionlambda/index.ts`),
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: "handler",
       timeout: Duration.seconds(30),
