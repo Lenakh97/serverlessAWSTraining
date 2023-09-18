@@ -7,6 +7,8 @@ import dynamodb = require("aws-cdk-lib/aws-dynamodb");
 import lambda = require("aws-cdk-lib/aws-lambda");
 import event_sources = require("aws-cdk-lib/aws-lambda-event-sources");
 import { Duration } from "aws-cdk-lib";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import path = require("path");
 
 const imageBucketName = "cdk-rekn-imgagebucket";
 const resizedBucketName = imageBucketName + "-resized";
@@ -64,13 +66,17 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
-    const rekFn = new lambda.Function(this, "rekognitionFunction", {
-      code: lambda.Code.fromAsset("rekognitionlambda"),
-      runtime: lambda.Runtime.PYTHON_3_7,
-      handler: "index.handler",
+    const rekFn = new NodejsFunction(this, "rekognitionFunction", {
+      entry: path.join(__dirname, `../../rekognitionlambda/index.ts`),
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
-      layers: [layer, sharpLayer],
+      layers: [sharpLayer],
+      bundling: {
+        minify: false,
+        externalModules: ["aws-sdk", "sharp", "opt/nodejs/node:modules/sharp"],
+      },
       environment: {
         TABLE: table.tableName,
         BUCKET: imageBucket.bucketName,
