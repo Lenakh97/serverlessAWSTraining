@@ -12,7 +12,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 import type * as sharpType from "sharp";
-import * as sharpModule from "../layers/sharp/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
+import * as sharpModule from "/opt/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
 
 export const sharp = sharpModule as typeof sharpType;
 

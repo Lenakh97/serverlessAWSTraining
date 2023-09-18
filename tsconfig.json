@@ -21,7 +21,13 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "paths": {
+      "sharp": ["./layers/sharp/nodejs/node_modules/sharp"],
+      "/opt/nodejs/node_modules/sharp": [
+        "./layers/sharp/nodejs/node_modules/sharp"
+      ]
+    }
   },
   "exclude": [
     "node_modules",
