@@ -41,8 +41,6 @@ export const generateThumb = async (ourBucket: string, ourKey: string) => {
   // Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
 
-  // ??? Define upload and download paths
-
   // Download file from s3 and store it in Lambda /tmp storage ??
   const image = await s3.send(
     new GetObjectCommand({
@@ -64,8 +62,6 @@ export const generateThumb = async (ourBucket: string, ourKey: string) => {
       Key: safeKey,
     })
   );
-
-  // ?? Clean up files in /tmp so we don't run out of space
 };
 
 export const rekFunction = async (ourBucket: string, ourKey: string) => {
@@ -95,23 +91,18 @@ export const rekFunction = async (ourBucket: string, ourKey: string) => {
   };
 
   //Add all of our labels into imageLabels by iterating over response['Labels']
-
   response.Labels?.forEach((label) => {
     objectsDetected.push(label.Name);
     const indexString = "Object" + String(objectsDetected.length);
     imageLabels[indexString] = label.Name ?? "";
   });
 
-  //Instantiate a table resource object of our environment variable
-
   //Put them into table
   await db.send(
     new PutItemCommand({
       TableName: Table,
       Item: marshall({
-        //cacheKey: "strava-summary",
         timestamp: new Date().toISOString(),
-        //ttl: Date.now() / 1000 + 24 * 60 * 60, // 24 hours
         imageLabels,
       }),
     })
