@@ -25,5 +25,7 @@ jobs:
           key: build-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
+      - name: Install sharp
+        run: cd layers/sharp/nodejs && npm ci && cd ../../..
       - name: Deploy to AWS
         run: npx cdk deploy --require-approval never

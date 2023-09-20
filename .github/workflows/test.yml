@@ -17,6 +17,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Install sharp
+        run: cd layers/sharp/nodejs && npm ci && cd ../../..
+
       - run: npx tsc
 
       - run: npm test
