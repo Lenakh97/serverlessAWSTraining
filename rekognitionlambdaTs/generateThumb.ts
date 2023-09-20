@@ -4,14 +4,14 @@ import { streamToBuffer } from "./streamToBuffer";
 import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
 import { s3, sharp } from ".";
 
-export const generateThumb = async (ourBucket: string, ourKey: string) => {
+export const generateThumb = async (ourBucket: string, ourKey: string, thumbBucket: string) => {
   // Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
 
   // Download file from s3 and store it in Lambda /tmp storage ??
   const image = await s3.send(
     new GetObjectCommand({
-      Bucket: Bucket,
+      Bucket: ourBucket,
       Key: safeKey,
     })
   );
@@ -25,7 +25,7 @@ export const generateThumb = async (ourBucket: string, ourKey: string) => {
   await s3.send(
     new PutObjectCommand({
       Body: resizedImage,
-      Bucket: ThumbBucket,
+      Bucket: thumbBucket,
       Key: safeKey,
     })
   );

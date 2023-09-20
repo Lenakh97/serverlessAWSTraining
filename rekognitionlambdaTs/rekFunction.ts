@@ -4,7 +4,11 @@ import { marshall } from "@aws-sdk/util-dynamodb";
 import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
 import { RekogClient, minConfidence, db } from ".";
 
-export const rekFunction = async (ourBucket: string, ourKey: string) => {
+export const rekFunction = async (
+  ourBucket: string,
+  ourKey: string,
+  tableName: string
+) => {
   //Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
   console.log("Currently processing the following image");
@@ -40,7 +44,7 @@ export const rekFunction = async (ourBucket: string, ourKey: string) => {
   //Put them into table
   await db.send(
     new PutItemCommand({
-      TableName: Table,
+      TableName: tableName,
       Item: marshall({
         timestamp: new Date().toISOString(),
         imageLabels,
