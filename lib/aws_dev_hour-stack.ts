@@ -6,9 +6,11 @@ import iam = require("aws-cdk-lib/aws-iam");
 import dynamodb = require("aws-cdk-lib/aws-dynamodb");
 import lambda = require("aws-cdk-lib/aws-lambda");
 import event_sources = require("aws-cdk-lib/aws-lambda-event-sources");
+import sqs = require("aws-cdk-lib/aws-sqs");
 import { Duration } from "aws-cdk-lib";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path = require("path");
+import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 
 const imageBucketName = "cdk-rekn-imgagebucket";
 const resizedBucketName = imageBucketName + "-resized";
@@ -76,11 +78,7 @@ export class AwsDevHourStack extends Stack {
         THUMBBUCKET: resizedBucket.bucketName,
       },
     });
-    rekFn.addEventSource(
-      new event_sources.S3EventSource(imageBucket, {
-        events: [s3.EventType.OBJECT_CREATED],
-      })
-    );
+
     imageBucket.grantRead(rekFn);
     table.grantWriteData(rekFn);
     resizedBucket.grantPut(rekFn);
@@ -92,6 +90,34 @@ export class AwsDevHourStack extends Stack {
         resources: ["*"],
       })
     );
+
+    // =====================================================================================
+    // Building SQS queue and DeadLetter Queue
+    // =====================================================================================
+    const dlQueue = new sqs.Queue(this, "ImageDLQueue", {
+      // is noy a good practice to give it a name for scalability reason
+    });
+
+    const queue = new sqs.Queue(this, "ImageQueue", {
+      visibilityTimeout: cdk.Duration.seconds(30),
+      receiveMessageWaitTime: cdk.Duration.seconds(20),
+      deadLetterQueue: {
+        maxReceiveCount: 2,
+        queue: dlQueue,
+      },
+    });
+
+    // =====================================================================================
+    // Building S3 Bucket Create Notification to SQS
+    // =====================================================================================
+    imageBucket.addObjectCreatedNotification(new s3n.SqsDestination(queue), {
+      suffix: ".jpeg",
+    });
+
+    // =====================================================================================
+    // Lambda(Rekognition) to consume messages from SQS
+    // =====================================================================================
+    rekFn.addEventSource(new event_sources.SqsEventSource(queue));
 
     // =====================================================================================
     // Lambda for Synchronous Frond End
