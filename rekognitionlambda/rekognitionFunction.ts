@@ -1,13 +1,16 @@
 import { DetectLabelsCommand } from "@aws-sdk/client-rekognition";
-import { PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
-import { RekogClient, minConfidence, db } from ".";
+import { RekogClient } from ".";
 
-export const rekFunction = async (
+// min confidence for amazon rekognition
+export const minConfidence = 50;
+
+export const rekognitionFunction = async (
   ourBucket: string,
   ourKey: string,
-  tableName: string
+  tableName: string,
+  db: DynamoDBClient
 ) => {
   //Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
@@ -45,10 +48,10 @@ export const rekFunction = async (
   await db.send(
     new PutItemCommand({
       TableName: tableName,
-      Item: marshall({
-        timestamp: new Date().toISOString(),
-        imageLabels,
-      }),
+      Item: {
+        ...imageLabels,
+        image: { S: safeKey },
+      },
     })
   );
 };
