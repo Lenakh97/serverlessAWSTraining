@@ -16,6 +16,7 @@
     "@aws-sdk/client-s3": "3.400.0",
     "@aws-sdk/util-dynamodb": "3.410.0",
     "@nordicsemiconductor/from-env": "2.0.0",
+    "@types/aws-lambda": "^8.10.121",
     "@types/jest": "^29.5.4",
     "@types/node": "20.5.4",
     "@types/prettier": "2.7.3",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "2.93.0",
+    "aws-lambda": "^1.0.7",
     "constructs": "^10.2.69",
     "sharp": "^0.32.5",
     "source-map-support": "^0.5.21",

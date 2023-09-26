@@ -4,8 +4,9 @@ import { fromEnv } from "@nordicsemiconductor/from-env";
 import { S3Client } from "@aws-sdk/client-s3";
 import sharpType from "sharp";
 import * as sharpModule from "/opt/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
-import { rekFunction } from "./rekFunction";
-import { generateThumb } from "./generateThumb";
+import { rekognitionFunction } from "./rekognitionFunction.js";
+import { generateThumb } from "./generateThumb.js";
+import { S3Event, SQSEvent } from "aws-lambda";
 
 export const sharp = sharpModule.default as typeof sharpType;
 
@@ -13,19 +14,21 @@ export const RekogClient = new RekognitionClient({ region: "REGION" });
 export const db = new DynamoDBClient({});
 export const s3 = new S3Client({});
 
-const { Table, Bucket, ThumbBucket } = fromEnv({
+const { Table, ThumbBucket } = fromEnv({
   Table: "TABLE",
-  Bucket: "BUCKET",
   ThumbBucket: "THUMBBUCKET",
 })(process.env);
 
-// min confidence for amazon rekognition
-export const minConfidence = 50;
-
-export const handler = (ourBucket: string, ourKey: string) => {
+export const handler = async (event: SQSEvent) => {
   console.log("Lambda processing event: ");
-  //For each message (photo) get the bucket name and key
-  //For each bucket/key, retrieve labels
-  generateThumb(ourBucket, ourKey, ThumbBucket);
-  rekFunction(ourBucket, ourKey, Table);
+  const records = event.Records;
+  for await (const payload of records) {
+    const eventInfo = JSON.parse(payload.body) as S3Event;
+    for await (const element of eventInfo?.Records ?? []) {
+      const bucketName = element.s3.bucket.name;
+      const bucketKey = element.s3.object.key;
+      generateThumb(bucketName, bucketKey, ThumbBucket, s3);
+      rekognitionFunction(bucketName, bucketKey, Table, db);
+    }
+  }
 };
