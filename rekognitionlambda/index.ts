@@ -2,13 +2,11 @@ import { RekognitionClient } from "@aws-sdk/client-rekognition";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
 import { S3Client } from "@aws-sdk/client-s3";
-import sharpType from "sharp";
-import * as sharpModule from "/opt/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
+
 import { rekognitionFunction } from "./rekognitionFunction.js";
 import { generateThumb } from "./generateThumb.js";
 import { S3Event, SQSEvent } from "aws-lambda";
 
-export const sharp = sharpModule.default as typeof sharpType;
 
 export const RekogClient = new RekognitionClient({ region: "REGION" });
 export const db = new DynamoDBClient({});
