@@ -67,16 +67,16 @@ export class AwsDevHourStack extends Stack {
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
-      layers: [sharpLayer],
-      bundling: {
-        minify: false,
-        externalModules: ["aws-sdk", "sharp", "opt/nodejs/node_modules/sharp"],
-      },
       environment: {
         TABLE: table.tableName,
         BUCKET: imageBucket.bucketName,
         THUMBBUCKET: resizedBucket.bucketName,
       },
+      bundling: {
+        minify: false,
+        externalModules: ["aws-sdk", "sharp", "/opt/nodejs/node_modules/sharp"],
+      },
+      layers: [sharpLayer],
     });
 
     imageBucket.grantRead(rekFn);
