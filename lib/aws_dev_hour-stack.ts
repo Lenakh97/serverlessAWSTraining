@@ -70,7 +70,7 @@ export class AwsDevHourStack extends Stack {
       layers: [sharpLayer],
       bundling: {
         minify: false,
-        externalModules: ["aws-sdk", "sharp", "opt/nodejs/node:modules/sharp"],
+        externalModules: ["aws-sdk", "sharp", "opt/nodejs/node_modules/sharp"],
       },
       environment: {
         TABLE: table.tableName,
