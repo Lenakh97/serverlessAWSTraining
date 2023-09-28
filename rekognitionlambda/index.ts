@@ -7,8 +7,7 @@ import { rekognitionFunction } from "./rekognitionFunction.js";
 import { generateThumb } from "./generateThumb.js";
 import { S3Event, SQSEvent } from "aws-lambda";
 
-
-export const RekogClient = new RekognitionClient({ region: "REGION" });
+export const RekogClient = new RekognitionClient({ region: "us-east-2" });
 export const db = new DynamoDBClient({});
 export const s3 = new S3Client({});
 
@@ -25,8 +24,8 @@ export const handler = async (event: SQSEvent) => {
     for await (const element of eventInfo?.Records ?? []) {
       const bucketName = element.s3.bucket.name;
       const bucketKey = element.s3.object.key;
-      generateThumb(bucketName, bucketKey, ThumbBucket, s3);
-      rekognitionFunction(bucketName, bucketKey, Table, db);
+      await generateThumb(bucketName, bucketKey, ThumbBucket, s3);
+      await rekognitionFunction(bucketName, bucketKey, Table, db);
     }
   }
 };
