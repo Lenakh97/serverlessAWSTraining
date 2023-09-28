@@ -33,15 +33,13 @@ export const rekognitionFunction = async (
 
   //Create our array and dict for our label construction
   const objectsDetected = [];
-  const imageLabels: Record<string, string> = {
-    image: safeKey,
-  };
+  const imageLabels: Record<string, Record<string, string>> = {};
 
   //Add all of our labels into imageLabels by iterating over response['Labels']
   response.Labels?.forEach((label) => {
     objectsDetected.push(label.Name);
     const indexString = "Object" + String(objectsDetected.length);
-    imageLabels[indexString] = label.Name ?? "";
+    imageLabels[indexString] = { S: label.Name ?? "" };
   });
 
   //Put them into table
