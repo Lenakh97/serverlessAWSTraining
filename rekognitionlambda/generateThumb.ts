@@ -31,7 +31,7 @@ export const generateThumb = async (
   const stream = image.Body as Readable;
   const buffer = await streamToBuffer(stream);
 
-  const resizedImage = sharp(buffer).resize(200).toBuffer();
+  const resizedImage = await sharp(buffer).resize(200).toBuffer();
 
   //Upload the thumbnail to the thumbnail bucket
   await s3.send(
