@@ -15,13 +15,13 @@ export const generateThumb = async (
   ourBucket: string,
   ourKey: string,
   thumbBucket: string,
-  s3: S3Client
+  s3Client: S3Client
 ) => {
   // Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
 
   // Download file from s3 and store it in Lambda /tmp storage ??
-  const image = await s3.send(
+  const image = await s3Client.send(
     new GetObjectCommand({
       Bucket: ourBucket,
       Key: safeKey,
@@ -34,11 +34,11 @@ export const generateThumb = async (
   const resizedImage = await sharp(buffer).resize(200).toBuffer();
 
   //Upload the thumbnail to the thumbnail bucket
-  await s3.send(
+  await s3Client.send(
     new PutObjectCommand({
       Body: resizedImage,
       Bucket: thumbBucket,
       Key: safeKey,
     })
   );
-};
+}
