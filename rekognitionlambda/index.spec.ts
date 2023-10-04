@@ -1,63 +1,79 @@
-// user puts image in s3 bucket - workflow?
-// SQS sends event to handler, which is executed
-// Bucket name and key will be found in the event
-// generateThumb is then executed and will:
-//  - download image from s3 bucket (found in event)
-//  - resize image (make thumbnail)
-//  - upload thumbnail to new S3 bucket
-// rekognitionFunction() is executed
-//  - use RekogClient to retrieve labels
-//  - put labels info record
-//  - put the labels into a dynamoDB
-import { after, describe, test } from "node:test";
-
-import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
-import { RekognitionClient } from "@aws-sdk/client-rekognition";
+import { describe, test, before } from "node:test";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DeleteObjectCommand,
-  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import path from "path";
 import { readFile } from "fs/promises";
-import { fromEnv } from "@nordicsemiconductor/from-env";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DeleteCommand,
+  DynamoDBDocumentClient,
+  ScanCommand,
+} from "@aws-sdk/lib-dynamodb";
+import {
+  CloudFormationClient,
+  ListStackResourcesCommand,
+} from "@aws-sdk/client-cloudformation";
 
-const RekogClient = new RekognitionClient({ region: "us-east-2" });
 const db = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(db);
 const s3 = new S3Client({});
-
-const { ThumbBucket, TableName, BucketName } = fromEnv({
-  ThumbBucket: "THUMBBUCKET",
-  TableName: "TABLENAME",
-  BucketName: "BUCKETNAME",
-})(process.env);
+const CFclient = new CloudFormationClient();
 
 const image = path.join(process.cwd(), "./rekognitionlambda/cats.jpeg");
 const key = `cats.jpeg`;
 
-describe("e2e-tests", () => {
-  after(async () => {
-    console.log("finished with tests");
-    //delete resources after running tests
+let thumbBucketName: string;
+let tableName: string;
+let bucketName: string;
 
-    /*await s3.send(
+describe("e2e-tests", () => {
+  before(async () => {
+    //Get resource names from cloudformation (bucketName and tableName)
+    const response = await CFclient.send(
+      new ListStackResourcesCommand({ StackName: "AwsDevHourStack" })
+    );
+    for (const {
+      ResourceType,
+      PhysicalResourceId,
+    } of response.StackResourceSummaries ?? []) {
+      if (ResourceType === "AWS::S3::Bucket") {
+        if (PhysicalResourceId?.includes("resized")) {
+          thumbBucketName = PhysicalResourceId;
+        } else {
+          bucketName = PhysicalResourceId ?? "";
+        }
+      }
+      if (ResourceType === "AWS::DynamoDB::Table") {
+        tableName = PhysicalResourceId ?? "";
+      }
+    }
+    console.log(bucketName, thumbBucketName, tableName);
+
+    //delete images in both s3 buckets before running test
+    await s3.send(
       new DeleteObjectCommand({
         Bucket: bucketName,
         Key: key,
       })
     );
-    console.log("deleted image in s3 bucket");
+    console.log("deleted image in original bucket");
     await s3.send(
       new DeleteObjectCommand({
-        Bucket: ThumbBucket,
+        Bucket: thumbBucketName,
         Key: key,
       })
     );
     console.log("deleted image in thumbBucket");
-    */
+    await docClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: { image: key },
+      })
+    );
+    console.log("deleted labels in dynamoDB");
   });
   test("uploading an image to the bucket should trigger the handler", async () => {
     //uploading an image to the bucket should trigger the handler
@@ -65,27 +81,16 @@ describe("e2e-tests", () => {
 
     await s3.send(
       new PutObjectCommand({
-        Bucket: BucketName,
+        Bucket: bucketName,
         Key: key,
         Body: uploadImage,
       })
     );
   });
-  test("a thumbnail should be generated and put in thumbBucket", async () => {
-    const thumbNailImage = await s3.send(
-      new GetObjectCommand({
-        Bucket: ThumbBucket,
-        Key: key,
-      })
-    );
-    console.log(thumbNailImage);
-
-    // rekognition should be used to get labels from the image
-  });
   test("labels should be put in dynamodb", async () => {
     const response = await docClient.send(
       new ScanCommand({
-        TableName: TableName,
+        TableName: tableName,
       })
     );
     if (response.Count === 0) {
