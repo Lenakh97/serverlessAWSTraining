@@ -5,7 +5,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 import { rekognitionFunction } from "./rekognitionFunction.js";
 import { generateThumb } from "./generateThumb.js";
-import { S3Event, SQSEvent } from "aws-lambda";
+import { S3Event, S3EventRecord, SQSEvent, SQSRecord } from "aws-lambda";
 
 export const RekogClient = new RekognitionClient({ region: "us-east-2" });
 export const db = new DynamoDBClient({});
@@ -19,13 +19,17 @@ const { Table, ThumbBucket } = fromEnv({
 export const handler = async (event: SQSEvent) => {
   console.log("Lambda processing event: ");
   const records = event.Records;
-  for await (const payload of records) {
-    const eventInfo = JSON.parse(payload.body) as S3Event;
-    for await (const element of eventInfo?.Records ?? []) {
-      const bucketName = element.s3.bucket.name;
-      const bucketKey = element.s3.object.key;
-      await generateThumb(bucketName, bucketKey, ThumbBucket, s3);
-      await rekognitionFunction(bucketName, bucketKey, Table, db);
-    }
-  }
+  await Promise.all(
+    records.map(async (payload: SQSRecord) => {
+      const eventInfo = JSON.parse(payload.body) as S3Event;
+      await Promise.all(
+        eventInfo?.Records?.map(async (element: S3EventRecord) => {
+          const bucketName = element.s3.bucket.name;
+          const bucketKey = element.s3.object.key;
+          await generateThumb(bucketName, bucketKey, ThumbBucket, s3);
+          await rekognitionFunction(bucketName, bucketKey, Table, db);
+        }) ?? []
+      );
+    })
+  );
 };
