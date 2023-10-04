@@ -87,7 +87,7 @@ export class AwsDevHourStack extends Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["rekognition:DetectLabels"],
-        resources: ["*"],
+        resources: [imageBucket.bucketArn],
       })
     );
 
