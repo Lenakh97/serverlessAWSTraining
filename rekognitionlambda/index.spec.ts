@@ -1,4 +1,5 @@
-import { describe, test, before } from "node:test";
+import { describe, test, before, after } from "node:test";
+import assert from "node:assert";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DeleteObjectCommand,
@@ -16,6 +17,7 @@ import {
   CloudFormationClient,
   ListStackResourcesCommand,
 } from "@aws-sdk/client-cloudformation";
+import pRetry from "p-retry";
 
 const db = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(db);
@@ -88,14 +90,29 @@ describe("e2e-tests", () => {
     );
   });
   test("labels should be put in dynamodb", async () => {
-    const response = await docClient.send(
-      new ScanCommand({
-        TableName: tableName,
-      })
-    );
-    if (response.Count === 0) {
-      console.log("No items in dynamoDB");
+    const getTableItems = async (tableName: string) => {
+      const res = await docClient.send(
+        new ScanCommand({
+          TableName: tableName,
+        })
+      );
+      if (res.Count === 0) {
+        throw new Error("No items in table");
+      }
+      return res;
+    };
+    //Check if the labels are in DynamoBD, if not try again up to 5 times.
+    const res = await pRetry(() => getTableItems(tableName), {
+      onFailedAttempt: (error) => {
+        console.log("failed: ", error);
+      },
+      retries: 5,
+    });
+    //Check that there exists an item in DynamoDB
+    assert.equal(res.Count, 1);
+    //Check that the item has the correct key
+    if (res.Items !== undefined) {
+      assert.equal(res.Items[0].image, key);
     }
-    console.log(response.Items);
   });
 });
