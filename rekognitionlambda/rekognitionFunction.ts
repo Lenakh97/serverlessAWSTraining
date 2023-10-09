@@ -11,7 +11,7 @@ export const rekognitionFunction = async (
   ourKey: string,
   tableName: string,
   db: DynamoDBClient
-) => {
+): Promise<{ success: boolean } | { error: Error }> => {
   //Clean the string to add the colon back into requested name
   const safeKey = replaceSubstringWithColon(ourKey);
   console.log("Currently processing the following image");
@@ -30,6 +30,9 @@ export const rekognitionFunction = async (
       MinConfidence: minConfidence,
     })
   );
+  if (response === undefined) {
+    return { error: new Error("Failed to retrieve labels.") };
+  }
 
   //Create our array and dict for our label construction
   const objectsDetected = [];
@@ -43,7 +46,7 @@ export const rekognitionFunction = async (
   });
 
   //Put them into table
-  await db.send(
+  const uploadLabels = await db.send(
     new PutItemCommand({
       TableName: tableName,
       Item: {
@@ -52,4 +55,10 @@ export const rekognitionFunction = async (
       },
     })
   );
+  if (uploadLabels === undefined) {
+    return {
+      error: new Error(`Failed to upload labels to table: ${tableName}`),
+    };
+  }
+  return { success: true };
 };

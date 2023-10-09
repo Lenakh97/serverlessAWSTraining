@@ -26,8 +26,27 @@ export const handler = async (event: SQSEvent) => {
         eventInfo?.Records?.map(async (element: S3EventRecord) => {
           const bucketName = element.s3.bucket.name;
           const bucketKey = element.s3.object.key;
-          await generateThumb(bucketName, bucketKey, ThumbBucket, s3);
-          await rekognitionFunction(bucketName, bucketKey, Table, db);
+          const maybeThumbnail = await generateThumb(
+            bucketName,
+            bucketKey,
+            ThumbBucket,
+            s3
+          );
+          if ("error" in maybeThumbnail) {
+            console.error("Error generateThumb():", maybeThumbnail.error);
+          }
+          const maybeRekognition = await rekognitionFunction(
+            bucketName,
+            bucketKey,
+            Table,
+            db
+          );
+          if ("error" in maybeRekognition) {
+            console.error(
+              "Error rekognitionFunction(): ",
+              maybeRekognition.error
+            );
+          }
         }) ?? []
       );
     })
