@@ -43,7 +43,6 @@ describe("e2e-tests", () => {
         Body: uploadImage,
       })
     );
-
     //Check if the labels are in DynamoBD, if not try again up to 5 times.
     const res = await pRetry(() => getTableItems(tableName), {
       onFailedAttempt: (error) => {
