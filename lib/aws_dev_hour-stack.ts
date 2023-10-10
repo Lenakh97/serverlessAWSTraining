@@ -87,7 +87,7 @@ export class AwsDevHourStack extends Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["rekognition:DetectLabels"],
-        resources: ['*'],
+        resources: ["*"],
       })
     );
 
@@ -138,3 +138,9 @@ export class AwsDevHourStack extends Stack {
     table.grantReadWriteData(serviceFn);
   }
 }
+
+export type StackOutputs = {
+  imageBucket: string;
+  resizedBucket: string;
+  ddbTable: string;
+};

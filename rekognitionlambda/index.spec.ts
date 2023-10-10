@@ -1,4 +1,4 @@
-import { describe, test, before, after } from "node:test";
+import { describe, test, before } from "node:test";
 import assert from "node:assert";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
@@ -13,11 +13,10 @@ import {
   DynamoDBDocumentClient,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
-import {
-  CloudFormationClient,
-  ListStackResourcesCommand,
-} from "@aws-sdk/client-cloudformation";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import pRetry from "p-retry";
+import { stackOutput } from "@nordicsemiconductor/cloudformation-helpers";
+import type { StackOutputs } from "../lib/aws_dev_hour-stack";
 
 const db = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(db);
@@ -33,27 +32,13 @@ let bucketName: string;
 
 describe("e2e-tests", () => {
   before(async () => {
-    //Get resource names from cloudformation (bucketName and tableName)
-    const response = await CFclient.send(
-      new ListStackResourcesCommand({ StackName: "AwsDevHourStack" })
+    //Get resource names from cloudformation
+    const outputs = await stackOutput(CFclient)<StackOutputs>(
+      "AwsDevHourStack"
     );
-    for (const {
-      ResourceType,
-      PhysicalResourceId,
-    } of response.StackResourceSummaries ?? []) {
-      if (ResourceType === "AWS::S3::Bucket") {
-        if (PhysicalResourceId?.includes("resized")) {
-          thumbBucketName = PhysicalResourceId;
-        } else {
-          bucketName = PhysicalResourceId ?? "";
-        }
-      }
-      if (ResourceType === "AWS::DynamoDB::Table") {
-        tableName = PhysicalResourceId ?? "";
-      }
-    }
-    console.log(bucketName, thumbBucketName, tableName);
-
+    bucketName = outputs.imageBucket;
+    thumbBucketName = outputs.resizedBucket;
+    tableName = outputs.ddbTable;
     //delete images in both s3 buckets before running test
     await s3.send(
       new DeleteObjectCommand({
@@ -89,18 +74,19 @@ describe("e2e-tests", () => {
       })
     );
   });
+  const getTableItems = async (tableName: string) => {
+    const res = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+      })
+    );
+    if (res.Count === 0) {
+      throw new Error("No items in table");
+    }
+    return res;
+  };
+
   test("labels should be put in dynamodb", async () => {
-    const getTableItems = async (tableName: string) => {
-      const res = await docClient.send(
-        new ScanCommand({
-          TableName: tableName,
-        })
-      );
-      if (res.Count === 0) {
-        throw new Error("No items in table");
-      }
-      return res;
-    };
     //Check if the labels are in DynamoBD, if not try again up to 5 times.
     const res = await pRetry(() => getTableItems(tableName), {
       onFailedAttempt: (error) => {
