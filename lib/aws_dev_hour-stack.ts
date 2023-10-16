@@ -55,7 +55,7 @@ export class AwsDevHourStack extends Stack {
     const sharpLayer = new lambda.LayerVersion(this, "sharp-layer", {
       compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
       code: lambda.Code.fromAsset("layers/sharp"),
-      description: "Uses a 3rd party library called Sharp o resize images.",
+      description: "Uses a 3rd party library called Sharp to resize images.",
     });
 
     // =====================================================================================
@@ -123,14 +123,16 @@ export class AwsDevHourStack extends Stack {
     // Lambda for Synchronous Frond End
     // =====================================================================================
 
-    const serviceFn = new lambda.Function(this, "serviceFunction", {
-      code: lambda.Code.fromAsset("servicelambda"),
-      runtime: lambda.Runtime.PYTHON_3_7,
-      handler: "index.handler",
+    const serviceFn = new NodejsFunction(this, "serviceFunction", {
+      entry: path.join(__dirname, `../servicelambda/index.ts`),
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: "handler",
+      timeout: Duration.seconds(30),
+      memorySize: 1024,
       environment: {
         TABLE: table.tableName,
         BUCKET: imageBucket.bucketName,
-        RESIZEDBUCKET: resizedBucket.bucketName,
+        THUMBBUCKET: resizedBucket.bucketName,
       },
     });
     imageBucket.grantWrite(serviceFn);
