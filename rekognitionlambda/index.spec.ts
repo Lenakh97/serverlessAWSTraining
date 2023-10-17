@@ -4,7 +4,7 @@ import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import path from "path";
 import { readFile } from "fs/promises";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import pRetry from "p-retry";
 import { stackOutput } from "@nordicsemiconductor/cloudformation-helpers";
