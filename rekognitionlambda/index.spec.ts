@@ -19,7 +19,6 @@ const CFclient = new CloudFormationClient();
 const image = path.join(process.cwd(), "./rekognitionlambda/cats.jpeg");
 const key = randomUUID() + ".jpeg";
 
-let thumbBucketName: string;
 let tableName: string;
 let bucketName: string;
 
@@ -29,7 +28,6 @@ describe("e2e-tests", () => {
     const outputs =
       await stackOutput(CFclient)<StackOutputs>("AwsDevHourStack");
     bucketName = outputs.imageBucket;
-    thumbBucketName = outputs.resizedBucket;
     tableName = outputs.ddbTable;
   });
   test("uploading an image to the bucket should trigger the handler and upload labels to DynamoDB", async () => {
