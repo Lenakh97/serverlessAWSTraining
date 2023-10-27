@@ -5,7 +5,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 import { rekognitionFunction } from "./rekognitionFunction.js";
 import { generateThumb } from "./generateThumb.js";
-import { S3Event, S3EventRecord, SQSEvent, SQSRecord } from "aws-lambda";
+import type { S3Event, S3EventRecord, SQSEvent, SQSRecord } from "aws-lambda";
 
 export const RekogClient = new RekognitionClient({ region: "us-east-2" });
 export const db = new DynamoDBClient({});
