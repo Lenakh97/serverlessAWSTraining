@@ -17,14 +17,15 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true
-  },
-  "paths": {
+    "noUnusedLocals": true,
+    "paths": {
       "sharp": ["./layers/sharp/nodejs/node_modules/sharp"],
       "/opt/nodejs/node_modules/sharp": [
         "./layers/sharp/nodejs/node_modules/sharp"
       ]
     },
+  },
+  
     
   "exclude": ["cdk.out/**/*", "dist/**/*"]
 }
