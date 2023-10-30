@@ -158,7 +158,6 @@ export class AwsDevHourStack extends Stack {
       "gitHubOICDProvider",
       gitHubOIDCProviderArn
     );
-    console.log({ repository, gitHubOIDC });
     const cd = new CD(this, { repository, gitHubOIDC });
 
     new cdk.CfnOutput(this, "cdRoleArn", {
