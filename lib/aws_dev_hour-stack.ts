@@ -11,6 +11,8 @@ import path from "path";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import { CD } from "./CD";
 import { CI_STACK_NAME } from "./stackConfig";
+import * as url from "url";
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const imageBucketName = "cdk-rekn-imgagebucket";
 const resizedBucketName = imageBucketName + "-resized";
