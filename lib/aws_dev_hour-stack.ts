@@ -1,7 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Stack, aws_iam as IAM, App } from "aws-cdk-lib";
 import s3 from "aws-cdk-lib/aws-s3";
-import iam from "aws-cdk-lib/aws-iam";
 import dynamodb from "aws-cdk-lib/aws-dynamodb";
 import lambda from "aws-cdk-lib/aws-lambda";
 import event_sources from "aws-cdk-lib/aws-lambda-event-sources";
@@ -96,8 +95,8 @@ export class AwsDevHourStack extends Stack {
     resizedBucket.grantPut(rekFn);
 
     rekFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
+      new IAM.PolicyStatement({
+        effect: IAM.Effect.ALLOW,
         actions: ["rekognition:DetectLabels"],
         resources: ["*"],
       })
@@ -157,6 +156,7 @@ export class AwsDevHourStack extends Stack {
       "gitHubOICDProvider",
       gitHubOIDCProviderArn
     );
+    console.log({ repository, gitHubOIDC });
     const cd = new CD(this, { repository, gitHubOIDC });
 
     new cdk.CfnOutput(this, "cdRoleArn", {

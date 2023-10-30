@@ -16,31 +16,31 @@
     "url": "git+https://https://github.com/Lenakh97/serverlessAWSTraining.git"
   },
   "devDependencies": {
-    "@aws-sdk/client-cloudformation": "3.421.0",
-    "@aws-sdk/client-dynamodb": "3.398.0",
-    "@aws-sdk/client-iam": "3.433.0",
-    "@aws-sdk/client-rekognition": "3.410.0",
-    "@aws-sdk/client-s3": "3.400.0",
-    "@aws-sdk/lib-dynamodb": "3.421.0",
-    "@aws-sdk/util-dynamodb": "3.410.0",
-    "@nordicsemiconductor/asset-tracker-cloud-code-style": "12.0.102",
-    "@nordicsemiconductor/cloudformation-helpers": "8.0.0",
+    "@aws-sdk/client-cloudformation": "3.438.0",
+    "@aws-sdk/client-dynamodb": "3.438.0",
+    "@aws-sdk/client-iam": "3.438.0",
+    "@aws-sdk/client-rekognition": "3.438.0",
+    "@aws-sdk/client-s3": "3.438.0",
+    "@aws-sdk/lib-dynamodb": "3.438.0",
+    "@aws-sdk/util-dynamodb": "3.438.0",
+    "@nordicsemiconductor/asset-tracker-cloud-code-style": "12.0.103",
+    "@nordicsemiconductor/cloudformation-helpers": "9.0.2",
     "@nordicsemiconductor/from-env": "2.0.0",
-    "@types/aws-lambda": "^8.10.121",
-    "@types/node": "20.5.4",
-    "@types/prettier": "2.7.3",
-    "aws-cdk": "2.93.0",
+    "@types/aws-lambda": "8.10.125",
+    "@types/node": "20.8.9",
+    "@types/prettier": "3.0.0",
+    "aws-cdk": "2.103.1",
     "p-retry": "6.1.0",
     "tsmatchers": "5.0.0",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.93.0",
+    "aws-cdk-lib": "2.103.1",
     "aws-lambda": "^1.0.7",
-    "constructs": "^10.2.69",
-    "sharp": "^0.32.5",
+    "constructs": "10.3.0",
+    "sharp": "0.32.6",
     "source-map-support": "^0.5.21",
-    "tsx": "^3.12.7"
+    "tsx": "3.14.0"
   },
   "release": {
     "branches": [
