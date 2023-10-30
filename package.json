@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://https://github.com/Lenakh97/serverlessAWSTraining.git"
+    "url": "git+https://github.com/Lenakh97/serverlessAWSTraining.git"
   },
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "3.438.0",
