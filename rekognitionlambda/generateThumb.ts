@@ -7,6 +7,7 @@ import { Readable } from "stream";
 import { streamToBuffer } from "./streamToBuffer";
 import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
 import sharpType from "sharp";
+// @ts-ignore
 import * as sharpModule from "/opt/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer
 
 export const sharp = sharpModule.default as typeof sharpType;
