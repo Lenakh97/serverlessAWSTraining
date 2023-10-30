@@ -25,22 +25,19 @@
     "@aws-sdk/util-dynamodb": "3.438.0",
     "@nordicsemiconductor/asset-tracker-cloud-code-style": "12.0.103",
     "@nordicsemiconductor/cloudformation-helpers": "9.0.2",
-    "@nordicsemiconductor/from-env": "2.0.0",
     "@types/aws-lambda": "8.10.125",
     "@types/node": "20.8.9",
     "@types/prettier": "3.0.0",
     "aws-cdk": "2.103.1",
+    "aws-cdk-lib": "2.103.1",
+    "constructs": "10.3.0",
     "p-retry": "6.1.0",
-    "tsmatchers": "5.0.0",
-    "typescript": "^5.1.6"
+    "tsx": "3.14.0",
+    "typescript": "5.2.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.103.1",
-    "aws-lambda": "^1.0.7",
-    "constructs": "10.3.0",
-    "sharp": "0.32.6",
-    "source-map-support": "^0.5.21",
-    "tsx": "3.14.0"
+    "@nordicsemiconductor/from-env": "2.0.0",
+    "sharp": "0.32.6"
   },
   "release": {
     "branches": [
