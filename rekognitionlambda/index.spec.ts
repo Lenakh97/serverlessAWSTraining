@@ -51,13 +51,13 @@ describe("e2e-tests", () => {
       retries: 5,
     });
 
-    if (res.Items === undefined) {
+    if (res.Items === undefined || res.Items[0] === undefined) {
       assert.fail("Item in DynamoDB is undefined");
     }
     //Check that the item has the correct labels
-    assert.equal(res.Items[0].Object1.S, "Animal");
-    assert.equal(res.Items[0].Object2.S, "Cat");
-    assert.equal(res.Items[0].Object3.S, "Mammal");
+    assert.equal(res.Items[0].Object1?.S, "Animal");
+    assert.equal(res.Items[0].Object2?.S, "Cat");
+    assert.equal(res.Items[0].Object3?.S, "Mammal");
   });
 });
 
