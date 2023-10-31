@@ -1,28 +1,41 @@
 import * as cdk from "aws-cdk-lib";
-import { Stack, StackProps } from "aws-cdk-lib";
-import { Construct } from "constructs";
-import s3 = require("aws-cdk-lib/aws-s3");
-import iam = require("aws-cdk-lib/aws-iam");
-import dynamodb = require("aws-cdk-lib/aws-dynamodb");
-import lambda = require("aws-cdk-lib/aws-lambda");
-import event_sources = require("aws-cdk-lib/aws-lambda-event-sources");
-import sqs = require("aws-cdk-lib/aws-sqs");
+import { Stack, aws_iam as IAM, App } from "aws-cdk-lib";
+import s3 from "aws-cdk-lib/aws-s3";
+import dynamodb from "aws-cdk-lib/aws-dynamodb";
+import lambda from "aws-cdk-lib/aws-lambda";
+import event_sources from "aws-cdk-lib/aws-lambda-event-sources";
+import sqs from "aws-cdk-lib/aws-sqs";
 import { Duration } from "aws-cdk-lib";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import path = require("path");
+import path from "path";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
+import { CD } from "./CD";
+import { STACK_NAME } from "./stackConfig";
+import * as url from "url";
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const imageBucketName = "cdk-rekn-imgagebucket";
 const resizedBucketName = imageBucketName + "-resized";
 
 export class AwsDevHourStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
+  public constructor(
+    parent: App,
+    {
+      repository,
+      gitHubOIDCProviderArn,
+    }: {
+      repository: {
+        owner: string;
+        repo: string;
+      };
+      gitHubOIDCProviderArn: string;
+    }
+  ) {
+    super(parent, STACK_NAME);
 
     // =====================================================================================
     // Image Bucket
     // =====================================================================================
-
     const imageBucket = new s3.Bucket(this, imageBucketName, {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -84,8 +97,8 @@ export class AwsDevHourStack extends Stack {
     resizedBucket.grantPut(rekFn);
 
     rekFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
+      new IAM.PolicyStatement({
+        effect: IAM.Effect.ALLOW,
         actions: ["rekognition:DetectLabels"],
         resources: ["*"],
       })
@@ -138,6 +151,20 @@ export class AwsDevHourStack extends Stack {
     imageBucket.grantWrite(serviceFn);
     resizedBucket.grantWrite(serviceFn);
     table.grantReadWriteData(serviceFn);
+
+    // Set up role for CD
+    const gitHubOIDC = IAM.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      "gitHubOICDProvider",
+      gitHubOIDCProviderArn
+    );
+    const cd = new CD(this, { repository, gitHubOIDC });
+
+    new cdk.CfnOutput(this, "cdRoleArn", {
+      exportName: `${this.stackName}:cdRoleArn`,
+      description: "Role to use in GitHub Actions",
+      value: cd.role.roleArn,
+    });
   }
 }
 
@@ -145,4 +172,5 @@ export type StackOutputs = {
   imageBucket: string;
   resizedBucket: string;
   ddbTable: string;
+  cdRoleArn: string;
 };
