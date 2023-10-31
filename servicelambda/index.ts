@@ -1,7 +1,7 @@
 import {
   DynamoDBClient,
   QueryCommand,
-  QueryCommandOutput,
+  type QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DeleteCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
