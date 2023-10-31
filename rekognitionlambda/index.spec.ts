@@ -4,7 +4,7 @@ import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import path from "path";
 import { readFile } from "fs/promises";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import pRetry from "p-retry";
 import { stackOutput } from "@nordicsemiconductor/cloudformation-helpers";
@@ -19,18 +19,15 @@ const CFclient = new CloudFormationClient();
 const image = path.join(process.cwd(), "./rekognitionlambda/cats.jpeg");
 const key = randomUUID() + ".jpeg";
 
-let thumbBucketName: string;
 let tableName: string;
 let bucketName: string;
 
 describe("e2e-tests", () => {
   before(async () => {
     //Get resource names from cloudformation
-    const outputs = await stackOutput(CFclient)<StackOutputs>(
-      "AwsDevHourStack"
-    );
+    const outputs =
+      await stackOutput(CFclient)<StackOutputs>("AwsDevHourStack");
     bucketName = outputs.imageBucket;
-    thumbBucketName = outputs.resizedBucket;
     tableName = outputs.ddbTable;
   });
   test("uploading an image to the bucket should trigger the handler and upload labels to DynamoDB", async () => {
