@@ -1,14 +1,61 @@
-# Welcome to your CDK TypeScript project
+# Serverless training
 
-This is a blank project for CDK development with TypeScript.
+This is a project following the serverless training given in [this series](https://pages.awscloud.com/global-traincert-twitch-dev-hour-building-modern-applications.html). The series has been followed, but some changes have been made:
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+- All python code is transformed into typescript
+- Unit tests and e2e tests are added during development
+- CI/CD is set up using OpenID Connect
 
-## Useful commands
+## Installation in your AWS account
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+### Setup
+
+Provide your AWS credentials, for example using the `.envrc` file.
+
+Install the dependencies:
+
+```bash
+npm ci
+```
+
+### Deploy
+
+```bash
+export STACK_NAME="AwsDevHourStack"
+npx cdk deploy
+```
+
+### CD with GitHub Actions
+
+Create a github environment `production`.
+
+Store the role name from the output as a GitHub Action secret:
+
+```bash
+CD_ROLE_ARN=`aws cloudformation describe-stacks --stack-name ${STACK_NAME:-AwsDevHourStack} | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "cdRoleArn") | .OutputValue' | sed -E 's/\/$//g'`
+gh variable set AWS_REGION --env production --body "${AWS_REGION}"
+gh secret set AWS_ROLE --env production --body "${CD_ROLE_ARN}"
+# If you've used a custom stack name
+gh variable set STACK_NAME --env production --body "${STACK_NAME}"
+```
+
+## CI with GitHub Actions
+
+Configure the AWS credentials for an account used for CI, then run
+
+```bash
+npx cdk --app 'npx tsx cdk/ci.ts' deploy
+```
+
+This creates a role with Administrator privileges in that account, and allows
+the GitHub repository of this repo to assume it.
+
+Create a GitHub environment `ci`.
+
+Store the role name from the output as a GitHub Action secret:
+
+```bash
+CI_ROLE_ARN=`aws cloudformation describe-stacks --stack-name ${STACK_NAME:-public-parameter-registry}-ci | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "roleArn") | .OutputValue' | sed -E 's/\/$//g'`
+gh variable set AWS_REGION --env ci --body "${AWS_REGION}"
+gh secret set AWS_ROLE --env ci --body "${CI_ROLE_ARN}"
+```
