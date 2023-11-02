@@ -12,6 +12,7 @@ import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import { CD } from "./CD";
 import { STACK_NAME } from "./stackConfig";
 import * as url from "url";
+import * as apigw from "aws-cdk-lib/aws-apigateway";
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const imageBucketName = "cdk-rekn-imgagebucket";
@@ -164,6 +165,97 @@ export class AwsDevHourStack extends Stack {
       exportName: `${this.stackName}:cdRoleArn`,
       description: "Role to use in GitHub Actions",
       value: cd.role.roleArn,
+    });
+
+    const api = new apigw.LambdaRestApi(this, "imageAPI", {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigw.Cors.ALL_ORIGINS,
+        allowMethods: apigw.Cors.ALL_METHODS,
+      },
+      handler: serviceFn,
+      proxy: false,
+    });
+
+    // =====================================================================================
+    // This construct builds a new Amazon API Gateway with AWS Lambda Integration
+    // =====================================================================================
+    const lambdaIntegration = new apigw.LambdaIntegration(serviceFn, {
+      proxy: false,
+      requestParameters: {
+        "integration.request.querystring.action":
+          "method.request.querystring.action",
+        "integration.request.querystring.key": "method.request.querystring.key",
+      },
+      requestTemplates: {
+        "application/json": JSON.stringify({
+          action: "$util.escapeJavaScript($input.params('action'))",
+          key: "$util.escapeJavaScript($input.params('key'))",
+        }),
+      },
+      passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
+      integrationResponses: [
+        {
+          statusCode: "200",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+        {
+          selectionPattern: "(\n|.)+",
+          statusCode: "500",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+      ],
+    });
+    // =====================================================================================
+    // API Gateway
+    // =====================================================================================
+    const imageAPI = api.root.addResource("images");
+
+    // GET /images
+    imageAPI.addMethod("GET", lambdaIntegration, {
+      requestParameters: {
+        "method.request.querystring.action": true,
+        "method.request.querystring.key": true,
+      },
+      methodResponses: [
+        {
+          statusCode: "200",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": true,
+          },
+        },
+        {
+          statusCode: "500",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": true,
+          },
+        },
+      ],
+    });
+
+    // DELETE /images
+    imageAPI.addMethod("DELETE", lambdaIntegration, {
+      requestParameters: {
+        "method.request.querystring.action": true,
+        "method.request.querystring.key": true,
+      },
+      methodResponses: [
+        {
+          statusCode: "200",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": true,
+          },
+        },
+        {
+          statusCode: "500",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": true,
+          },
+        },
+      ],
     });
   }
 }

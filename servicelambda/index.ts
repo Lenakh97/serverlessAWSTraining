@@ -31,15 +31,20 @@ export const handler = async (event: handlerEvent) => {
       const maybeLabels = await getLabels(image);
       if ("error" in maybeLabels) {
         console.error("Error getLabels(): ", maybeLabels.error);
+        return maybeLabels.error;
       }
-      break;
+      return maybeLabels.success;
     case "deleteImage":
       const maybeDeletedImage = await deleteImage(image);
       if ("error" in maybeDeletedImage) {
         console.error("Error deleteImage(): ", maybeDeletedImage.error);
+        return maybeDeletedImage.error;
       }
-      break;
+      return maybeDeletedImage.success;
   }
+  return new Error(
+    "No action given. Give either 'getLabels' or 'deleteImage' as action."
+  );
 };
 
 const getLabels = async (
