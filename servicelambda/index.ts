@@ -33,7 +33,7 @@ export const handler = async (event: handlerEvent) => {
         console.error("Error getLabels(): ", maybeLabels.error);
         return maybeLabels.error;
       }
-      return maybeLabels.success;
+      return maybeLabels.success.Items;
     case "deleteImage":
       const maybeDeletedImage = await deleteImage(image);
       if ("error" in maybeDeletedImage) {
