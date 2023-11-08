@@ -257,6 +257,12 @@ export class AwsDevHourStack extends Stack {
         },
       ],
     });
+
+    new cdk.CfnOutput(this, "imageApi", {
+      exportName: `${this.stackName}:imageAPI`,
+      description: "Role to use in GitHub Actions",
+      value: api.url,
+    });
   }
 }
 
@@ -265,4 +271,5 @@ export type StackOutputs = {
   resizedBucket: string;
   ddbTable: string;
   cdRoleArn: string;
+  imageApi: string;
 };
