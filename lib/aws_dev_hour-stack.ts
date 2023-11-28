@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Stack, aws_iam as IAM, App } from "aws-cdk-lib";
-import s3 from "aws-cdk-lib/aws-s3";
+import s3, { HttpMethods } from "aws-cdk-lib/aws-s3";
 import dynamodb from "aws-cdk-lib/aws-dynamodb";
 import lambda from "aws-cdk-lib/aws-lambda";
 import event_sources from "aws-cdk-lib/aws-lambda-event-sources";
@@ -15,11 +15,13 @@ import * as url from "url";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const imageBucketName = "cdk-rekn-imgagebucket";
 const resizedBucketName = imageBucketName + "-resized";
+const websiteBucketName = "cdk-rekn-publicbucket";
 
 export class AwsDevHourStack extends Stack {
   public constructor(
@@ -46,6 +48,13 @@ export class AwsDevHourStack extends Stack {
     new cdk.CfnOutput(this, "imageBucket", { value: imageBucket.bucketName });
     const imageBucketArn = imageBucket.bucketArn;
 
+    imageBucket.addCorsRule({
+      allowedMethods: [HttpMethods.GET, HttpMethods.PUT],
+      allowedOrigins: ["*"],
+      allowedHeaders: ["*"],
+      maxAge: 3000,
+    });
+
     // =====================================================================================
     // Thumbnail Bucket
     // =====================================================================================
@@ -57,6 +66,41 @@ export class AwsDevHourStack extends Stack {
       value: resizedBucket.bucketName,
     });
     const resizedBucketArn = resizedBucket.bucketArn;
+
+    resizedBucket.addCorsRule({
+      allowedMethods: [HttpMethods.GET, HttpMethods.PUT],
+      allowedOrigins: ["*"],
+      allowedHeaders: ["*"],
+      maxAge: 3000,
+    });
+
+    // =====================================================================================
+    // Website bucket
+    // =====================================================================================
+    const webBucket = new s3.Bucket(this, websiteBucketName, {
+      websiteIndexDocument: "index.html",
+      websiteErrorDocument: "index.html",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      publicReadAccess: true,
+      blockPublicAccess: {
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      },
+    });
+
+    new cdk.CfnOutput(this, "bucketURL", {
+      value: webBucket.bucketWebsiteDomainName,
+    });
+    // =====================================================================================
+    // Deploy site contents to S3 Bucket
+    // =====================================================================================
+    new s3deploy.BucketDeployment(this, "DeployWebsite", {
+      sources: [s3deploy.Source.asset("./public")],
+      destinationBucket: webBucket,
+    });
 
     // =====================================================================================
     // Amazon DynamoDB table for storing image labels
@@ -130,7 +174,7 @@ export class AwsDevHourStack extends Stack {
     // Building S3 Bucket Create Notification to SQS
     // =====================================================================================
     imageBucket.addObjectCreatedNotification(new s3n.SqsDestination(queue), {
-      suffix: ".jpeg",
+      prefix: "private/",
     });
 
     // =====================================================================================
@@ -230,6 +274,7 @@ export class AwsDevHourStack extends Stack {
       generateSecret: false, // Don't need to generate secret for web app running on browsers
       authFlows: {
         adminUserPassword: true, // Enable admin based user password authentication flow
+        userSrp: true, //Enable SRP based authentication
       },
     });
     const developerProviderName = "developerAuthenticated";
@@ -291,7 +336,7 @@ export class AwsDevHourStack extends Stack {
         resources: [
           imageBucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
           imageBucketArn + "/private/${cognito-identity.amazonaws.com:sub}",
-          resizedBucketArn + "/private/${cognito-identity-amazonaws.com:sub}/*",
+          resizedBucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
           resizedBucketArn + "/private/${cognito-identity.amazonaws.com:sub}",
         ],
       })
@@ -388,7 +433,6 @@ export class AwsDevHourStack extends Stack {
 
     new cdk.CfnOutput(this, "imageApi", {
       exportName: `${this.stackName}:imageAPI`,
-      description: "Role to use in GitHub Actions",
       value: api.url,
     });
   }

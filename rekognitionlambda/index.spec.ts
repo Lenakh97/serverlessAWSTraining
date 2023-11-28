@@ -15,7 +15,7 @@ const s3 = new S3Client({});
 const CFclient = new CloudFormationClient();
 
 const image = path.join(process.cwd(), "./rekognitionlambda/cats.jpeg");
-const key = randomUUID() + ".jpeg";
+const key = "private/" + randomUUID() + ".jpeg";
 
 const outputs = await stackOutput(CFclient)<StackOutputs>("AwsDevHourStack");
 describe("e2e-tests", async () => {
