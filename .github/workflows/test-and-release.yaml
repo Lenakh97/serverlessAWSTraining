@@ -40,18 +40,18 @@ jobs:
       - name: Install sharp
         run: cd layers/sharp/nodejs && npm ci && cd ../../..
 
-      - name: Check Typescript
-        run: npx tsc
-
-      - name: Run Unit Tests
-        run: npm test
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE}}
           role-session-name: github-action-serverless-aws-training
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Check Typescript
+        run: npx tsc
+
+      - name: Run Unit Tests
+        run: npm test
 
       - name: Generate Stack ID
         run: |
