@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "find ./ -type f -name '*.spec.ts' ! -path '*/node_modules/*' -exec npx tsx {} ';'",
+    "test": "find ./ -type f -name \\*.spec.ts -not -path './node_modules/*' -not -path './dist/*' | xargs npx tsx --test --test-reporter spec",
     "cdk": "cdk"
   },
   "repository": {
