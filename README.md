@@ -20,6 +20,16 @@ npm ci
 
 ### Deploy
 
+Configure parameters and secrets for deployment pipeline:
+
+```bash
+aws ssm put-parameter --name devhour-backend-git-repo --type String --value <git-repo-name>
+aws ssm put-parameter --name devhour-backend-git-branch --type String --value <branch>
+aws ssm put-parameter --name devhour-backend-git-owner --type String --value <owner>
+
+aws secretsmanager create-secret --name devhour-backend-git-token --secret-string <secret>
+```
+
 ```bash
 export STACK_NAME="AwsDevHourStack"
 npx cdk deploy

@@ -16,7 +16,6 @@
     "url": "git+https://github.com/Lenakh97/serverlessAWSTraining.git"
   },
   "devDependencies": {
-    "@aws-cdk/aws-apigateway": "1.204.0",
     "@aws-sdk/client-cloudformation": "3.438.0",
     "@aws-sdk/client-cognito-identity-provider": "3.454.0",
     "@aws-sdk/client-dynamodb": "3.438.0",
