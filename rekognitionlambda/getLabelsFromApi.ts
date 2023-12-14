@@ -1,3 +1,5 @@
+// TODO: move test code to separate folder
+// TODO: remove axios as dependency, use `fetch`
 import axios from "axios";
 
 export const getLabelsFromApi = async (

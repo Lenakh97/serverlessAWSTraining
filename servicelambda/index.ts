@@ -47,6 +47,7 @@ export const handler = async (event: handlerEvent) => {
   );
 };
 
+// TODO: add tests
 const getLabels = async (
   image: string
 ): Promise<{ success: QueryCommandOutput } | { error: Error }> => {
@@ -66,6 +67,7 @@ const getLabels = async (
   return { success: res };
 };
 
+// TODO: add tests
 const deleteImage = async (
   image: string
 ): Promise<{ success: boolean } | { error: Error }> => {
@@ -82,6 +84,7 @@ const deleteImage = async (
   return { success: true };
 };
 
+// TODO: add tests
 const deleteImageFromBucket = async (
   bucket: string,
   key: string
@@ -98,6 +101,7 @@ const deleteImageFromBucket = async (
   return { success: true };
 };
 
+// TODO: add tests
 const deleteImageFromDynamoDB = async (
   image: string
 ): Promise<{ success: boolean } | { error: Error }> => {
