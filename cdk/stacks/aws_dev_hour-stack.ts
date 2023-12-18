@@ -9,8 +9,8 @@ import { Duration } from "aws-cdk-lib";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
-import { CD } from "./CD";
-import { STACK_NAME } from "./stackConfig";
+import { CD } from "../resources/CD";
+import { STACK_NAME } from "../stackConfig";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
@@ -110,7 +110,7 @@ export class AwsDevHourStack extends Stack {
 
     const sharpLayer = new lambda.LayerVersion(this, "sharp-layer", {
       // TODO: Use current LTS Node.js version: 20
-      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      compatibleRuntimes: [lambda.Runtime.NODEJS_LATEST],
       code: lambda.Code.fromAsset("layers/sharp"),
       description: "Uses a 3rd party library called Sharp to resize images.",
     });
@@ -119,9 +119,9 @@ export class AwsDevHourStack extends Stack {
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
-      entry: path.join(process.cwd(), `../lambda/rekognitionLambda.ts`),
+      entry: path.join(process.cwd(), `./lambda/rekognitionLambda.ts`),
       // TODO: Use current LTS Node.js version: 20
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_LATEST,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
@@ -182,9 +182,9 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const serviceFn = new NodejsFunction(this, "serviceFunction", {
-      entry: path.join(process.cwd(), `../lambda/serviceLambda.ts`),
+      entry: path.join(process.cwd(), `./lambda/serviceLambda.ts`),
       // TODO: Use current LTS Node.js version: 20
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_LATEST,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
