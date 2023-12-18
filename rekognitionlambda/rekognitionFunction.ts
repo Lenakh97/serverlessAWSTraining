@@ -1,7 +1,7 @@
 import { DetectLabelsCommand } from "@aws-sdk/client-rekognition";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
-import { RekogClient } from ".";
+import { replaceSubstringWithColon } from "../lambda/util/replaceSubstringWithColon";
+import { RekogClient } from "../lambda/rekognitionLambda";
 
 // min confidence for amazon rekognition
 export const minConfidence = 50;
