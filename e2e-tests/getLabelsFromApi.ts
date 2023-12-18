@@ -1,6 +1,3 @@
-// TODO: move test code to separate folder
-import fetch from "node-fetch";
-
 export const getLabelsFromApi = async (
   method: string,
   key: string,
