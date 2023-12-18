@@ -11,14 +11,10 @@ import path from "path";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import { CD } from "./CD";
 import { STACK_NAME } from "./stackConfig";
-import * as url from "url";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
-
-// TODO: ESM hack, not needed, remove, use process.cwd() instead, see below
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 // TODO: Inline
 const imageBucketName = "cdk-rekn-imgagebucket";
@@ -128,7 +124,7 @@ export class AwsDevHourStack extends Stack {
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
-      entry: path.join(process.cwd(), `rekognitionlambda/index.ts`),
+      entry: path.join(process.cwd(), `../lambda/rekognitionLambda.ts`),
       // TODO: Use current LTS Node.js version: 20
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: "handler",
@@ -191,7 +187,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const serviceFn = new NodejsFunction(this, "serviceFunction", {
-      entry: path.join(__dirname, `../servicelambda/index.ts`),
+      entry: path.join(process.cwd(), `../lambda/serviceLambda.ts`),
       // TODO: Use current LTS Node.js version: 20
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: "handler",
