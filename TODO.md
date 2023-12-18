@@ -1,1 +1,0 @@
-Look into renovate: https://github.com/renovatebot/renovate
