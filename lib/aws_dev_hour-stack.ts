@@ -16,11 +16,6 @@ import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 
-// TODO: Inline
-const imageBucketName = "cdk-rekn-imgagebucket";
-const resizedBucketName = imageBucketName + "-resized";
-const websiteBucketName = "cdk-rekn-publicbucket";
-
 export class AwsDevHourStack extends Stack {
   public constructor(
     parent: App,
@@ -40,7 +35,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Image Bucket
     // =====================================================================================
-    const imageBucket = new s3.Bucket(this, imageBucketName, {
+    const imageBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "imageBucket", { value: imageBucket.bucketName });
@@ -57,7 +52,7 @@ export class AwsDevHourStack extends Stack {
     // Thumbnail Bucket
     // =====================================================================================
 
-    const resizedBucket = new s3.Bucket(this, resizedBucketName, {
+    const resizedBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket-resized", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "resizedBucket", {
@@ -75,7 +70,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Website bucket
     // =====================================================================================
-    const webBucket = new s3.Bucket(this, websiteBucketName, {
+    const webBucket = new s3.Bucket(this, "cdk-rekn-publicbucket", {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
