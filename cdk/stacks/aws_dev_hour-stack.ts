@@ -9,19 +9,12 @@ import { Duration } from "aws-cdk-lib";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "path";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
-import { CD } from "./CD";
-import { STACK_NAME } from "./stackConfig";
-import * as url from "url";
+import { CD } from "../resources/CD";
+import { STACK_NAME } from "../stackConfig";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
-
-const imageBucketName = "cdk-rekn-imgagebucket";
-const resizedBucketName = imageBucketName + "-resized";
-const websiteBucketName = "cdk-rekn-publicbucket";
 
 export class AwsDevHourStack extends Stack {
   public constructor(
@@ -42,7 +35,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Image Bucket
     // =====================================================================================
-    const imageBucket = new s3.Bucket(this, imageBucketName, {
+    const imageBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "imageBucket", { value: imageBucket.bucketName });
@@ -59,7 +52,7 @@ export class AwsDevHourStack extends Stack {
     // Thumbnail Bucket
     // =====================================================================================
 
-    const resizedBucket = new s3.Bucket(this, resizedBucketName, {
+    const resizedBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket-resized", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "resizedBucket", {
@@ -77,7 +70,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Website bucket
     // =====================================================================================
-    const webBucket = new s3.Bucket(this, websiteBucketName, {
+    const webBucket = new s3.Bucket(this, "cdk-rekn-publicbucket", {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -116,7 +109,8 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const sharpLayer = new lambda.LayerVersion(this, "sharp-layer", {
-      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      // TODO: Use current LTS Node.js version: 20
+      compatibleRuntimes: [lambda.Runtime.NODEJS_LATEST],
       code: lambda.Code.fromAsset("layers/sharp"),
       description: "Uses a 3rd party library called Sharp to resize images.",
     });
@@ -125,8 +119,9 @@ export class AwsDevHourStack extends Stack {
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
-      entry: path.join(__dirname, `../rekognitionlambda/index.ts`),
-      runtime: lambda.Runtime.NODEJS_18_X,
+      entry: path.join(process.cwd(), `./lambda/rekognitionLambda.ts`),
+      // TODO: Use current LTS Node.js version: 20
+      runtime: lambda.Runtime.NODEJS_LATEST,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
@@ -187,8 +182,9 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const serviceFn = new NodejsFunction(this, "serviceFunction", {
-      entry: path.join(__dirname, `../servicelambda/index.ts`),
-      runtime: lambda.Runtime.NODEJS_18_X,
+      entry: path.join(process.cwd(), `./lambda/serviceLambda.ts`),
+      // TODO: Use current LTS Node.js version: 20
+      runtime: lambda.Runtime.NODEJS_LATEST,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
@@ -223,40 +219,6 @@ export class AwsDevHourStack extends Stack {
       },
       handler: serviceFn,
       proxy: false,
-    });
-
-    // =====================================================================================
-    // This construct builds a new Amazon API Gateway with AWS Lambda Integration
-    // =====================================================================================
-    const lambdaIntegration = new apigw.LambdaIntegration(serviceFn, {
-      proxy: false,
-      requestParameters: {
-        "integration.request.querystring.action":
-          "method.request.querystring.action",
-        "integration.request.querystring.key": "method.request.querystring.key",
-      },
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          action: "$util.escapeJavaScript($input.params('action'))",
-          key: "$util.escapeJavaScript($input.params('key'))",
-        }),
-      },
-      passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseParameters: {
-            "method.response.header.Access-Control-Allow-Origin": "'*'",
-          },
-        },
-        {
-          selectionPattern: "(\n|.)+",
-          statusCode: "500",
-          responseParameters: {
-            "method.response.header.Access-Control-Allow-Origin": "'*'",
-          },
-        },
-      ],
     });
     // =====================================================================================
     // Cognito User Pool Authentication
@@ -378,6 +340,41 @@ export class AwsDevHourStack extends Stack {
     new cdk.CfnOutput(this, "developerProviderName", {
       value: developerProviderName,
     });
+
+    // =====================================================================================
+    // This construct builds a new Amazon API Gateway with AWS Lambda Integration
+    // =====================================================================================
+    const lambdaIntegration = new apigw.LambdaIntegration(serviceFn, {
+      proxy: false,
+      requestParameters: {
+        "integration.request.querystring.action":
+          "method.request.querystring.action",
+        "integration.request.querystring.key": "method.request.querystring.key",
+      },
+      requestTemplates: {
+        "application/json": JSON.stringify({
+          action: "$util.escapeJavaScript($input.params('action'))",
+          key: "$util.escapeJavaScript($input.params('key'))",
+        }),
+      },
+      passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
+      integrationResponses: [
+        {
+          statusCode: "200",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+        {
+          selectionPattern: "(\n|.)+",
+          statusCode: "500",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+      ],
+    });
+
     // =====================================================================================
     // API Gateway
     // =====================================================================================

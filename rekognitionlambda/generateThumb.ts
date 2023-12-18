@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 import { streamToBuffer } from "./streamToBuffer";
-import { replaceSubstringWithColon } from "./replaceSubstringWithColon";
+import { replaceSubstringWithColon } from "../lambda/util/replaceSubstringWithColon";
 import sharpType from "sharp";
 // @ts-ignore
 import * as sharpModule from "/opt/nodejs/node_modules/sharp"; // Uses the location of the module IN the layer

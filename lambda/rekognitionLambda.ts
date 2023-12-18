@@ -1,10 +1,11 @@
+// TODO: index.js/index.ts is usually a barrel file, use a better name, like lambda. Put all the lambda entries in one folder.
 import { RekognitionClient } from "@aws-sdk/client-rekognition";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
 import { S3Client } from "@aws-sdk/client-s3";
 
-import { rekognitionFunction } from "./rekognitionFunction.js";
-import { generateThumb } from "./generateThumb.js";
+import { rekognitionFunction } from "../rekognitionlambda/rekognitionFunction.js";
+import { generateThumb } from "../rekognitionlambda/generateThumb.js";
 import type { S3Event, S3EventRecord, SQSEvent, SQSRecord } from "aws-lambda";
 
 export const RekogClient = new RekognitionClient({ region: "us-east-2" });

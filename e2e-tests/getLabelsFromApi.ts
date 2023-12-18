@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export const getLabelsFromApi = async (
   method: string,
   key: string,
@@ -7,13 +5,15 @@ export const getLabelsFromApi = async (
   imageApi: string
 ) => {
   const url = `${imageApi}/images?action=${method}&key=${key}`;
-  const res = await axios.get(url, {
+  const res = await fetch(url, {
+    method: "get",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  if (Object.keys(res.data).length === 0) {
+  const data = await res.json();
+  if (Object.keys(data).length === 0) {
     throw new Error("No labels found");
   }
-  return res.data;
+  return data;
 };

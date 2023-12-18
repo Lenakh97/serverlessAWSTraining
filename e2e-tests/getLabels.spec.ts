@@ -1,3 +1,5 @@
+// TODO: index.js/index.ts is usually a barrel file, use a better name. Since its an e2e test, move it into a separate e2e folder
+// Goes also for all the test related code.
 import { describe, test } from "node:test";
 import assert from "node:assert";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -6,7 +8,7 @@ import { readFile } from "fs/promises";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import pRetry from "p-retry";
 import { stackOutput } from "@nordicsemiconductor/cloudformation-helpers";
-import type { StackOutputs } from "../lib/aws_dev_hour-stack";
+import type { StackOutputs } from "../cdk/stacks/aws_dev_hour-stack";
 import { randomUUID } from "node:crypto";
 import { getAccessToken } from "./getAccessToken";
 import { getLabelsFromApi } from "./getLabelsFromApi";
