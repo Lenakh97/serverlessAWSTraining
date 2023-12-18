@@ -28,7 +28,7 @@
     "@nordicsemiconductor/asset-tracker-cloud-code-style": "13.1.5",
     "@nordicsemiconductor/cloudformation-helpers": "9.0.2",
     "@types/aws-lambda": "8.10.130",
-    "@types/node": "20.10.4",
+    "@types/node": "20.10.5",
     "@types/prettier": "3.0.0",
     "aws-cdk": "2.115.0",
     "aws-cdk-lib": "2.115.0",
