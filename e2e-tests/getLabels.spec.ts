@@ -6,7 +6,7 @@ import { readFile } from "fs/promises";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import pRetry from "p-retry";
 import { stackOutput } from "@nordicsemiconductor/cloudformation-helpers";
-import type { StackOutputs } from "../lib/aws_dev_hour-stack";
+import type { StackOutputs } from "../cdk/stacks/aws_dev_hour-stack";
 import { randomUUID } from "node:crypto";
 import { getAccessToken } from "./getAccessToken";
 import { getLabelsFromApi } from "./getLabelsFromApi";
