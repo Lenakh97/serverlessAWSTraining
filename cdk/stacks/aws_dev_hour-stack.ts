@@ -109,7 +109,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const sharpLayer = new lambda.LayerVersion(this, "sharp-layer", {
-      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
       code: lambda.Code.fromAsset("layers/sharp"),
       description: "Uses a 3rd party library called Sharp to resize images.",
     });
@@ -119,7 +119,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
       entry: path.join(process.cwd(), `../lambda/rekognitionLambda.ts`),
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
@@ -181,7 +181,7 @@ export class AwsDevHourStack extends Stack {
 
     const serviceFn = new NodejsFunction(this, "serviceFunction", {
       entry: path.join(process.cwd(), `../lambda/serviceLambda.ts`),
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       handler: "handler",
       timeout: Duration.seconds(30),
       memorySize: 1024,
