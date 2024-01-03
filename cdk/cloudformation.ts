@@ -1,7 +1,7 @@
-import { AwsDevHourStack } from "../lib/aws_dev_hour-stack.js";
+import { AwsDevHourStack } from "./stacks/aws_dev_hour-stack.js";
 import { App } from "aws-cdk-lib";
 import pJSON from "../package.json";
-import { ensureGitHubOIDCProvider } from "../lib/ensureGitHubOIDCProvider.js";
+import { ensureGitHubOIDCProvider } from "./ensureGitHubOIDCProvider.js";
 import { IAMClient } from "@aws-sdk/client-iam";
 
 const repoUrl = new URL(pJSON.repository.url);

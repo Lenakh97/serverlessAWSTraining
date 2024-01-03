@@ -1,5 +1,5 @@
 import { App, CfnOutput, Duration, aws_iam as IAM, Stack } from "aws-cdk-lib";
-import { CI_STACK_NAME } from "./stackConfig";
+import { CI_STACK_NAME } from "../stackConfig";
 
 export class CIStack extends Stack {
   public constructor(
