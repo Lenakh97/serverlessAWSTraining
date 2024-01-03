@@ -118,7 +118,7 @@ export class AwsDevHourStack extends Stack {
     // Building our AWS Lambda Function; compute for our serverless microservice
     // =====================================================================================
     const rekFn = new NodejsFunction(this, "rekognitionFunction", {
-      entry: path.join(process.cwd(), `../lambda/rekognitionLambda.ts`),
+      entry: path.join(process.cwd(), `./lambda/rekognitionLambda.ts`),
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: "handler",
       timeout: Duration.seconds(30),
@@ -180,7 +180,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
 
     const serviceFn = new NodejsFunction(this, "serviceFunction", {
-      entry: path.join(process.cwd(), `../lambda/serviceLambda.ts`),
+      entry: path.join(process.cwd(), `./lambda/serviceLambda.ts`),
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: "handler",
       timeout: Duration.seconds(30),
