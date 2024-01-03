@@ -16,10 +16,6 @@ import { AuthorizationType } from "aws-cdk-lib/aws-apigateway";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 
-const imageBucketName = "cdk-rekn-imgagebucket";
-const resizedBucketName = imageBucketName + "-resized";
-const websiteBucketName = "cdk-rekn-publicbucket";
-
 export class AwsDevHourStack extends Stack {
   public constructor(
     parent: App,
@@ -39,7 +35,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Image Bucket
     // =====================================================================================
-    const imageBucket = new s3.Bucket(this, imageBucketName, {
+    const imageBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "imageBucket", { value: imageBucket.bucketName });
@@ -56,7 +52,7 @@ export class AwsDevHourStack extends Stack {
     // Thumbnail Bucket
     // =====================================================================================
 
-    const resizedBucket = new s3.Bucket(this, resizedBucketName, {
+    const resizedBucket = new s3.Bucket(this, "cdk-rekn-imgagebucket-resized", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     new cdk.CfnOutput(this, "resizedBucket", {
@@ -74,7 +70,7 @@ export class AwsDevHourStack extends Stack {
     // =====================================================================================
     // Website bucket
     // =====================================================================================
-    const webBucket = new s3.Bucket(this, websiteBucketName, {
+    const webBucket = new s3.Bucket(this, "cdk-rekn-publicbucket", {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -223,39 +219,6 @@ export class AwsDevHourStack extends Stack {
     });
 
     // =====================================================================================
-    // This construct builds a new Amazon API Gateway with AWS Lambda Integration
-    // =====================================================================================
-    const lambdaIntegration = new apigw.LambdaIntegration(serviceFn, {
-      proxy: false,
-      requestParameters: {
-        "integration.request.querystring.action":
-          "method.request.querystring.action",
-        "integration.request.querystring.key": "method.request.querystring.key",
-      },
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          action: "$util.escapeJavaScript($input.params('action'))",
-          key: "$util.escapeJavaScript($input.params('key'))",
-        }),
-      },
-      passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseParameters: {
-            "method.response.header.Access-Control-Allow-Origin": "'*'",
-          },
-        },
-        {
-          selectionPattern: "(\n|.)+",
-          statusCode: "500",
-          responseParameters: {
-            "method.response.header.Access-Control-Allow-Origin": "'*'",
-          },
-        },
-      ],
-    });
-    // =====================================================================================
     // Cognito User Pool Authentication
     // =====================================================================================
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -374,6 +337,40 @@ export class AwsDevHourStack extends Stack {
     });
     new cdk.CfnOutput(this, "developerProviderName", {
       value: developerProviderName,
+    });
+
+    // =====================================================================================
+    // This construct builds a new Amazon API Gateway with AWS Lambda Integration
+    // =====================================================================================
+    const lambdaIntegration = new apigw.LambdaIntegration(serviceFn, {
+      proxy: false,
+      requestParameters: {
+        "integration.request.querystring.action":
+          "method.request.querystring.action",
+        "integration.request.querystring.key": "method.request.querystring.key",
+      },
+      requestTemplates: {
+        "application/json": JSON.stringify({
+          action: "$util.escapeJavaScript($input.params('action'))",
+          key: "$util.escapeJavaScript($input.params('key'))",
+        }),
+      },
+      passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_TEMPLATES,
+      integrationResponses: [
+        {
+          statusCode: "200",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+        {
+          selectionPattern: "(\n|.)+",
+          statusCode: "500",
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Origin": "'*'",
+          },
+        },
+      ],
     });
     // =====================================================================================
     // API Gateway
