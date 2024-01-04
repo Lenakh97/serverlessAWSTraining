@@ -27,7 +27,7 @@
     "@aws-sdk/util-dynamodb": "3.484.0",
     "@nordicsemiconductor/asset-tracker-cloud-code-style": "13.1.5",
     "@nordicsemiconductor/cloudformation-helpers": "9.0.2",
-    "@types/aws-lambda": "8.10.130",
+    "@types/aws-lambda": "8.10.131",
     "@types/node": "20.10.6",
     "@types/prettier": "3.0.0",
     "aws-cdk": "2.117.0",
