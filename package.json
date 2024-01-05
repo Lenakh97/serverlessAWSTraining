@@ -25,7 +25,7 @@
     "@aws-sdk/client-s3": "3.484.0",
     "@aws-sdk/lib-dynamodb": "3.484.0",
     "@aws-sdk/util-dynamodb": "3.484.0",
-    "@nordicsemiconductor/asset-tracker-cloud-code-style": "13.1.5",
+    "@nordicsemiconductor/asset-tracker-cloud-code-style": "13.1.6",
     "@nordicsemiconductor/cloudformation-helpers": "9.0.2",
     "@types/aws-lambda": "8.10.131",
     "@types/node": "20.10.6",
