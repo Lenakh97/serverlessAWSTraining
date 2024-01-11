@@ -1,15 +1,13 @@
-import {
-  DynamoDBClient,
-  QueryCommand,
-  type QueryCommandOutput,
-} from "@aws-sdk/client-dynamodb";
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { DeleteCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { S3Client } from "@aws-sdk/client-s3";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
+import { getLabels } from "./util/getLabels";
+import { deleteImage } from "./util/deleteImage";
 
 export const db = new DynamoDBClient({});
 export const s3 = new S3Client({});
-const docClient = DynamoDBDocumentClient.from(db);
+export const docClient = DynamoDBDocumentClient.from(db);
 
 const { Table, Bucket, ThumbBucket } = fromEnv({
   Table: "TABLE",
@@ -28,14 +26,20 @@ export const handler = async (event: handlerEvent) => {
   console.log("handler initiated");
   switch (action) {
     case "getLabels":
-      const maybeLabels = await getLabels(image);
+      const maybeLabels = await getLabels(image, Table, docClient);
       if ("error" in maybeLabels) {
         console.error("Error getLabels(): ", maybeLabels.error);
         return maybeLabels.error;
       }
       return maybeLabels.success.Items;
     case "deleteImage":
-      const maybeDeletedImage = await deleteImage(image);
+      const maybeDeletedImage = await deleteImage(
+        image,
+        Table,
+        docClient,
+        Bucket,
+        ThumbBucket
+      );
       if ("error" in maybeDeletedImage) {
         console.error("Error deleteImage(): ", maybeDeletedImage.error);
         return maybeDeletedImage.error;
@@ -45,70 +49,4 @@ export const handler = async (event: handlerEvent) => {
   return new Error(
     "No action given. Give either 'getLabels' or 'deleteImage' as action."
   );
-};
-
-const getLabels = async (
-  image: string
-): Promise<{ success: QueryCommandOutput } | { error: Error }> => {
-  const res = await docClient.send(
-    new QueryCommand({
-      TableName: Table,
-      KeyConditionExpression: "image = :key",
-      ExpressionAttributeValues: {
-        ":key": { S: image },
-      },
-    })
-  );
-  if (res.Count === 0) {
-    return { error: new Error("Labels not found.") };
-  }
-  console.log("Labels have been found in DynamoDB.");
-  return { success: res };
-};
-
-const deleteImage = async (
-  image: string
-): Promise<{ success: boolean } | { error: Error }> => {
-  const results = await Promise.all([
-    deleteImageFromDynamoDB(image),
-    deleteImageFromBucket(Bucket, image),
-    deleteImageFromBucket(ThumbBucket, image),
-  ]);
-  for (const promise of results) {
-    if ("error" in promise) {
-      return { error: promise.error };
-    }
-  }
-  return { success: true };
-};
-
-const deleteImageFromBucket = async (
-  bucket: string,
-  key: string
-): Promise<{ success: boolean } | { error: Error }> => {
-  const deletedImage = await s3.send(
-    new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    })
-  );
-  if (deletedImage === undefined) {
-    return { error: new Error(`Image not deleted from ${bucket}`) };
-  }
-  return { success: true };
-};
-
-const deleteImageFromDynamoDB = async (
-  image: string
-): Promise<{ success: boolean } | { error: Error }> => {
-  const res = await docClient.send(
-    new DeleteCommand({
-      TableName: Table,
-      Key: { image: image },
-    })
-  );
-  if (res === undefined) {
-    return { error: new Error("Item not deleted from DynamoDB") };
-  }
-  return { success: true };
 };
