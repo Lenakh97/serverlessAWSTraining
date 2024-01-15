@@ -11,7 +11,7 @@ describe("deleteImageFromBucket()", () => {
     const s3: S3Client = {
       send: s3Send,
     } as any;
-    await deleteImageFromBucket(bucket, key, s3);
+    await deleteImageFromBucket(s3)(bucket, key);
 
     //Check that the correct command is used?
 
