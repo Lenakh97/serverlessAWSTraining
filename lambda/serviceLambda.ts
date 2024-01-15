@@ -3,11 +3,12 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
 import { getLabels } from "./util/getLabels";
-import { deleteImage } from "./util/deleteImage";
+import { deleteImageFromDynamoDB } from "./util/deleteImageFromDynamoDB";
+import { deleteImageFromBucket } from "./util/deleteImageFromBucket";
 
-export const db = new DynamoDBClient({});
-export const s3 = new S3Client({});
-export const docClient = DynamoDBDocumentClient.from(db);
+const db = new DynamoDBClient({});
+const s3 = new S3Client({});
+const docClient = DynamoDBDocumentClient.from(db);
 
 const { Table, Bucket, ThumbBucket } = fromEnv({
   Table: "TABLE",
@@ -19,6 +20,11 @@ type handlerEvent = {
   action: string;
   key: string;
 };
+
+const deleteImageFile = deleteImageFromBucket(s3);
+
+const deleteImageDBData = (key: string) =>
+  deleteImageFromDynamoDB(key, Table, docClient);
 
 export const handler = async (event: handlerEvent) => {
   const action = event.action;
@@ -33,18 +39,22 @@ export const handler = async (event: handlerEvent) => {
       }
       return maybeLabels.success.Items;
     case "deleteImage":
-      const maybeDeletedImage = await deleteImage(
-        image,
-        Table,
-        docClient,
-        Bucket,
-        ThumbBucket
-      );
-      if ("error" in maybeDeletedImage) {
-        console.error("Error deleteImage(): ", maybeDeletedImage.error);
-        return maybeDeletedImage.error;
+      const results = await Promise.all([
+        deleteImageDBData(image),
+        deleteImageFile(Bucket, image),
+        deleteImageFile(ThumbBucket, image),
+      ]);
+
+      const images: string[] = ["image1", "image2"];
+      await Promise.all(images.map(deleteImageDBData));
+
+      for (const promise of results) {
+        if ("error" in promise) {
+          console.error("Error deleteImage(): ", promise.error);
+          return { error: promise.error };
+        }
       }
-      return maybeDeletedImage.success;
+      return { success: true };
   }
   return new Error(
     "No action given. Give either 'getLabels' or 'deleteImage' as action."
