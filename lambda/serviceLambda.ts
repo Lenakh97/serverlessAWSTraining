@@ -2,9 +2,9 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
-import { getLabels } from "./util/getLabels";
-import { deleteImageFromDynamoDB } from "./util/deleteImageFromDynamoDB";
-import { deleteImageFromBucket } from "./util/deleteImageFromBucket";
+import { getLabels } from "./serviceLambda/getLabels";
+import { deleteImageFromDynamoDB } from "./serviceLambda/deleteImageFromDynamoDB";
+import { deleteImageFromBucket } from "./serviceLambda/deleteImageFromBucket";
 
 const db = new DynamoDBClient({});
 const s3 = new S3Client({});
