@@ -61,6 +61,9 @@ jobs:
       - name: Deploy solution stack
         run: npx cdk deploy --require-approval never
 
+      - name: Run End-to-End Tests
+        run: npm run test:e2e
+
       - name: Semantic release
         if: github.ref == 'refs/heads/saga'
         id: semantic-release
@@ -75,6 +78,5 @@ jobs:
         run: gh workflow run cd.yml
 
       - name: Clean up End-to-End test resources
-
         run: |
           npx cdk destroy -f
