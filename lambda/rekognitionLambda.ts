@@ -3,18 +3,21 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { fromEnv } from "@nordicsemiconductor/from-env";
 import { S3Client } from "@aws-sdk/client-s3";
 
-import { rekognitionFunction } from "../rekognitionlambda/rekognitionFunction.js";
-import { generateThumb } from "../rekognitionlambda/generateThumb.js";
+import { rekognitionFunction } from "./rekognitionLambda/rekognitionFunction.js";
+import { generateThumb } from "./rekognitionLambda/generateThumb.js";
 import type { S3Event, S3EventRecord, SQSEvent, SQSRecord } from "aws-lambda";
 
-export const RekogClient = new RekognitionClient({ region: "us-east-2" });
-export const db = new DynamoDBClient({});
-export const s3 = new S3Client({});
+const RekogClient = new RekognitionClient({ region: "us-east-2" });
+const db = new DynamoDBClient({});
+const s3 = new S3Client({});
 
 const { Table, ThumbBucket } = fromEnv({
   Table: "TABLE",
   ThumbBucket: "THUMBBUCKET",
 })(process.env);
+
+const rekogFunction = rekognitionFunction(db, RekogClient);
+const generateThumbnail = generateThumb(s3);
 
 export const handler = async (event: SQSEvent) => {
   console.log("Lambda processing event: ");
@@ -26,20 +29,18 @@ export const handler = async (event: SQSEvent) => {
         eventInfo?.Records?.map(async (element: S3EventRecord) => {
           const bucketName = element.s3.bucket.name;
           const bucketKey = element.s3.object.key;
-          const maybeThumbnail = await generateThumb(
+          const maybeThumbnail = await generateThumbnail(
             bucketName,
             bucketKey,
-            ThumbBucket,
-            s3
+            ThumbBucket
           );
           if ("error" in maybeThumbnail) {
             console.error("Error generateThumb():", maybeThumbnail.error);
           }
-          const maybeRekognition = await rekognitionFunction(
+          const maybeRekognition = await rekogFunction(
             bucketName,
             bucketKey,
-            Table,
-            db
+            Table
           );
           if ("error" in maybeRekognition) {
             console.error(
