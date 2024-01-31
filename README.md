@@ -1,6 +1,8 @@
 # Serverless training
 
-This is a project following the serverless training given in [this series](https://pages.awscloud.com/global-traincert-twitch-dev-hour-building-modern-applications.html). The series has been followed, but some changes have been made:
+This is a project following the serverless training given in
+[this series](https://pages.awscloud.com/global-traincert-twitch-dev-hour-building-modern-applications.html).
+The series has been followed, but some changes have been made:
 
 - All python code is transformed into typescript
 - Unit tests and e2e tests are added during development

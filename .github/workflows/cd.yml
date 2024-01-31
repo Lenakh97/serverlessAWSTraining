@@ -31,7 +31,8 @@ jobs:
           fetch-depth: 0
 
       - name: Set version
-        run: echo "VERSION=`git describe --tags HEAD | tr -d '\n'`" >> $GITHUB_ENV
+        run:
+          echo "VERSION=`git describe --tags HEAD | tr -d '\n'`" >> $GITHUB_ENV
 
       - uses: actions/setup-node@v4
         with:
