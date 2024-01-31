@@ -6,8 +6,8 @@ import {
 import { Readable } from 'stream'
 import { streamToBuffer } from './streamToBuffer.js'
 import { replaceSubstringWithColon } from '../util/replaceSubstringWithColon.js'
-// @ts-expect-error - Cannot find module '/opt/nodejs/node_modules/sharp.js' or its corresponding type declarations.ts(2307)
-import * as sharpModule from '/opt/nodejs/node_modules/sharp.js' // Uses the location of the module IN the layer
+// eslint-disable-next-line
+import * as sharpModule from '/opt/nodejs/node_modules/sharp' // Uses the location of the module IN the layer
 
 export const sharp = sharpModule.default
 
