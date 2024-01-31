@@ -11,7 +11,7 @@
     "test": "find ./ -type f -name \\*.spec.ts -not -path './e2e-tests/*' -not -path './node_modules/*' -not -path './dist/*' | xargs npx tsx --test --test-reporter spec",
     "test:e2e": "npx tsx --test e2e-tests/getLabels.spec.ts",
     "cdk": "cdk",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
