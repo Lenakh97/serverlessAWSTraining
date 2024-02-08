@@ -86,6 +86,15 @@ export class AwsDevHourStack extends Stack {
 		new cdk.CfnOutput(this, 'ddbTable', { value: table.tableName })
 
 		// =====================================================================================
+		// Amazon DynamoDB table for storing image eTag & image labels
+		// =====================================================================================
+		const hashTable = new dynamodb.Table(this, 'ImageHashLabels', {
+			partitionKey: { name: 'hashTable', type: dynamodb.AttributeType.STRING },
+			removalPolicy: cdk.RemovalPolicy.DESTROY,
+		})
+		new cdk.CfnOutput(this, 'ddbHashTable', { value: hashTable.tableName })
+
+		// =====================================================================================
 		// Building our AWS Lambda Function; compute for our serverless microservice
 		// =====================================================================================
 
@@ -106,6 +115,7 @@ export class AwsDevHourStack extends Stack {
 			memorySize: 1024,
 			environment: {
 				TABLE: table.tableName,
+				HASHTABLE: hashTable.tableName,
 				BUCKET: imageBucket.bucketName,
 			},
 			bundling: {
@@ -117,6 +127,7 @@ export class AwsDevHourStack extends Stack {
 
 		imageBucket.grantReadWrite(rekFn)
 		table.grantWriteData(rekFn)
+		hashTable.grantReadWriteData(rekFn)
 
 		rekFn.addToRolePolicy(
 			new IAM.PolicyStatement({
@@ -154,11 +165,13 @@ export class AwsDevHourStack extends Stack {
 			memorySize: 1024,
 			environment: {
 				TABLE: table.tableName,
+				HASHTABLE: hashTable.tableName,
 				BUCKET: imageBucket.bucketName,
 			},
 		})
 		imageBucket.grantWrite(serviceFn)
 		table.grantReadWriteData(serviceFn)
+		hashTable.grantReadWriteData(serviceFn)
 
 		// Set up role for CD
 		const gitHubOIDC = IAM.OpenIdConnectProvider.fromOpenIdConnectProviderArn(

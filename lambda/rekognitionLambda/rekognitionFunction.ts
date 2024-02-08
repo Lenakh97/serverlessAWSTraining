@@ -14,6 +14,8 @@ export const rekognitionFunction =
 		ourBucket: string,
 		ourKey: string,
 		tableName: string,
+		hashTable: string,
+		eTag: string,
 	): Promise<{ success: boolean } | { error: Error }> => {
 		//Clean the string to add the colon back into requested name
 		const safeKey = replaceSubstringWithColon(ourKey)
@@ -46,7 +48,7 @@ export const rekognitionFunction =
 			imageLabels[indexString] = { S: label.Name ?? '' }
 		})
 
-		//Put them into table
+		//Put the labels into the table
 		const uploadLabels = await db.send(
 			new PutItemCommand({
 				TableName: tableName,
@@ -59,6 +61,22 @@ export const rekognitionFunction =
 		if (uploadLabels === undefined) {
 			return {
 				error: new Error(`Failed to upload labels to table: ${tableName}`),
+			}
+		}
+		//Put the labels into the hashTable
+		const uploadLabelsHash = await db.send(
+			new PutItemCommand({
+				TableName: hashTable,
+				Item: {
+					...imageLabels,
+					hashTable: { S: eTag },
+				},
+			}),
+		)
+
+		if (uploadLabelsHash === undefined) {
+			return {
+				error: new Error(`Failed to upload labels to table: ${hashTable}`),
 			}
 		}
 		return { success: true }
