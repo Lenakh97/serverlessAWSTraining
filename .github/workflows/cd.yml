@@ -1,7 +1,6 @@
 name: Continuous Deploy solution
 
 on:
-  push:
   release:
     types: [published]
   workflow_dispatch:
