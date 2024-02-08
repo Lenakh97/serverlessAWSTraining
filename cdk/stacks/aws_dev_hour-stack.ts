@@ -143,18 +143,6 @@ export class AwsDevHourStack extends Stack {
 		})
 
 		// =====================================================================================
-		// Building S3 Bucket Create Notification to SQS
-		// =====================================================================================
-		imageBucket.addObjectCreatedNotification(new s3n.SqsDestination(queue), {
-			prefix: 'private/',
-		})
-
-		// =====================================================================================
-		// Lambda(Rekognition) to consume messages from SQS
-		// =====================================================================================
-		rekFn.addEventSource(new event_sources.SqsEventSource(queue))
-
-		// =====================================================================================
 		// Lambda for Synchronous Frond End
 		// =====================================================================================
 
@@ -404,6 +392,18 @@ export class AwsDevHourStack extends Stack {
 			exportName: `${this.stackName}:imageAPI`,
 			value: api.url,
 		})
+
+		// =====================================================================================
+		// Building S3 Bucket Create Notification to SQS
+		// =====================================================================================
+		imageBucket.addObjectCreatedNotification(new s3n.SqsDestination(queue), {
+			prefix: `private/${cdk.Fn.join('%3A', cdk.Fn.split(':', identityPool.ref))}/photos/`,
+		})
+
+		// =====================================================================================
+		// Lambda(Rekognition) to consume messages from SQS
+		// =====================================================================================
+		rekFn.addEventSource(new event_sources.SqsEventSource(queue))
 	}
 }
 

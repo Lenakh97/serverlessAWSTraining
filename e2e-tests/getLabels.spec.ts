@@ -15,9 +15,10 @@ const s3 = new S3Client({})
 const CFclient = new CloudFormationClient()
 
 const image = path.join(process.cwd(), './e2e-tests/images/cats.jpeg')
-const key = 'private/' + randomUUID() + '.jpeg'
 
 const outputs = await stackOutput(CFclient)<StackOutputs>('AwsDevHourStack')
+const key =
+	'private/' + outputs.IdentityPoolId + '/photos/' + randomUUID() + '.jpeg'
 void describe('e2e-tests', async () => {
 	void test('uploading an image to the bucket should trigger the handler and upload labels to DynamoDB', async () => {
 		const uploadImage = await readFile(image)

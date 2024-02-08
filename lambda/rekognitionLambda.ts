@@ -19,8 +19,9 @@ const rekogFunction = rekognitionFunction(db, RekogClient)
 const generateThumbnail = generateThumb(s3)
 
 export const handler = async (event: SQSEvent): Promise<void> => {
-	console.log('Lambda processing event: ')
+	console.log(JSON.stringify({ event }))
 	const records = event.Records
+	console.log(JSON.stringify({ records }))
 	await Promise.all(
 		records.map(async (payload: SQSRecord) => {
 			const eventInfo = JSON.parse(payload.body) as S3Event
