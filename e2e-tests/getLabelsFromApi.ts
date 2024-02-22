@@ -11,6 +11,7 @@ type returnArray = [
 		Object1: { S: string }
 		Object3: { S: string }
 		Object2: { S: string }
+		isCached: { BOOL: boolean }
 	},
 ]
 
