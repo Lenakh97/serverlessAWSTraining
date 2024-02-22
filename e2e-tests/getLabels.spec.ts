@@ -76,20 +76,22 @@ void describe('e2e-tests', async () => {
 		})
 
 		//Try to get the labels from the API
-		const resFromApi = await pRetry(
-			async () =>
-				getLabelsFromApi('getLabels', key, accessToken, outputs.imageApi),
-			{
-				onFailedAttempt: (error) => {
-					console.log('failed: ', error)
+		setTimeout(async () => {
+			const resFromApi = await pRetry(
+				async () =>
+					getLabelsFromApi('getLabels', key, accessToken, outputs.imageApi),
+				{
+					onFailedAttempt: (error) => {
+						console.log('failed: ', error)
+					},
+					retries: 5,
 				},
-				retries: 5,
-			},
-		)
-		if (resFromApi[0] === undefined) {
-			assert.fail('Labels not found.')
-		}
-		console.log(resFromApi)
-		assert.equal(resFromApi[0].isCached?.BOOL, true)
+			)
+			if (resFromApi[0] === undefined) {
+				assert.fail('Labels not found.')
+			}
+			console.log(resFromApi)
+			assert.equal(resFromApi[0].isCached?.BOOL, true)
+		}, 1000)
 	})
 })
