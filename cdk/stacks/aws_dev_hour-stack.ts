@@ -14,7 +14,6 @@ import { STACK_NAME } from '../stackConfig.js'
 import * as apigw from 'aws-cdk-lib/aws-apigateway'
 import { AuthorizationType } from 'aws-cdk-lib/aws-apigateway'
 import * as cognito from 'aws-cdk-lib/aws-cognito'
-import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 
 export class AwsDevHourStack extends Stack {
 	public constructor(
@@ -46,34 +45,6 @@ export class AwsDevHourStack extends Stack {
 			allowedOrigins: ['*'],
 			allowedHeaders: ['*'],
 			maxAge: 3000,
-		})
-
-		// =====================================================================================
-		// Website bucket
-		// =====================================================================================
-		const webBucket = new s3.Bucket(this, 'cdk-rekn-publicbucket', {
-			websiteIndexDocument: 'index.html',
-			websiteErrorDocument: 'index.html',
-			removalPolicy: cdk.RemovalPolicy.DESTROY,
-			autoDeleteObjects: true,
-			publicReadAccess: true,
-			blockPublicAccess: {
-				blockPublicAcls: false,
-				blockPublicPolicy: false,
-				ignorePublicAcls: false,
-				restrictPublicBuckets: false,
-			},
-		})
-
-		new cdk.CfnOutput(this, 'bucketURL', {
-			value: webBucket.bucketWebsiteDomainName,
-		})
-		// =====================================================================================
-		// Deploy site contents to S3 Bucket
-		// =====================================================================================
-		new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-			sources: [s3deploy.Source.asset('./public')],
-			destinationBucket: webBucket,
 		})
 
 		// =====================================================================================
