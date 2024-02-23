@@ -17,7 +17,6 @@ export const storeLabelsInDynamoDB =
 				},
 			}),
 		)
-		console.log(labels)
 		if (dbSend === undefined) {
 			return {
 				error: new Error(`Failed to upload labels to table: ${tableName}`),

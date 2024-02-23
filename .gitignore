@@ -3,3 +3,4 @@ node_modules
 cdk.out
 test_suite_analysis/
 managed_context/
+.envrc
