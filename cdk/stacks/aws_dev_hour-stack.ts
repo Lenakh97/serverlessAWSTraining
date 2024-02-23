@@ -3,17 +3,17 @@ import { Stack, aws_iam as IAM, App } from 'aws-cdk-lib'
 import s3, { HttpMethods } from 'aws-cdk-lib/aws-s3'
 import dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import lambda from 'aws-cdk-lib/aws-lambda'
-import event_sources from 'aws-cdk-lib/aws-lambda-event-sources'
-import sqs from 'aws-cdk-lib/aws-sqs'
 import { Duration } from 'aws-cdk-lib'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import path from 'path'
-import * as s3n from 'aws-cdk-lib/aws-s3-notifications'
 import { CD } from '../resources/CD.js'
 import { STACK_NAME } from '../stackConfig.js'
 import * as apigw from 'aws-cdk-lib/aws-apigateway'
 import { AuthorizationType } from 'aws-cdk-lib/aws-apigateway'
 import * as cognito from 'aws-cdk-lib/aws-cognito'
+import * as sns from 'aws-cdk-lib/aws-sns'
+import lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources'
+import { SnsDestination } from 'aws-cdk-lib/aws-s3-notifications'
 
 export class AwsDevHourStack extends Stack {
 	public constructor(
@@ -89,11 +89,6 @@ export class AwsDevHourStack extends Stack {
 				HASHTABLE: hashTable.tableName,
 				BUCKET: imageBucket.bucketName,
 			},
-			bundling: {
-				minify: false,
-				externalModules: ['aws-sdk', 'sharp', '/opt/nodejs/node_modules/sharp'],
-			},
-			layers: [sharpLayer],
 		})
 
 		imageBucket.grantReadWrite(rekFn)
@@ -107,22 +102,6 @@ export class AwsDevHourStack extends Stack {
 				resources: ['*'],
 			}),
 		)
-
-		// =====================================================================================
-		// Building SQS queue and DeadLetter Queue
-		// =====================================================================================
-		const dlQueue = new sqs.Queue(this, 'ImageDLQueue', {
-			// is noy a good practice to give it a name for scalability reason
-		})
-
-		const queue = new sqs.Queue(this, 'ImageQueue', {
-			visibilityTimeout: cdk.Duration.seconds(30),
-			receiveMessageWaitTime: cdk.Duration.seconds(20),
-			deadLetterQueue: {
-				maxReceiveCount: 2,
-				queue: dlQueue,
-			},
-		})
 
 		// =====================================================================================
 		// Lambda for Synchronous Frond End
@@ -143,6 +122,26 @@ export class AwsDevHourStack extends Stack {
 		imageBucket.grantWrite(serviceFn)
 		table.grantReadWriteData(serviceFn)
 		hashTable.grantReadWriteData(serviceFn)
+
+		// =====================================================================================
+		// Lambda for Making Thumbnails
+		// =====================================================================================
+		const thumbnailFn = new NodejsFunction(this, 'thumbnailFunction', {
+			entry: path.join(process.cwd(), `./lambda/thumbnailLambda.ts`),
+			runtime: lambda.Runtime.NODEJS_20_X,
+			handler: 'handler',
+			timeout: Duration.seconds(30),
+			memorySize: 1024,
+			environment: {
+				BUCKET: imageBucket.bucketName,
+			},
+			bundling: {
+				minify: false,
+				externalModules: ['aws-sdk', 'sharp', '/opt/nodejs/node_modules/sharp'],
+			},
+			layers: [sharpLayer],
+		})
+		imageBucket.grantReadWrite(thumbnailFn)
 
 		// Set up role for CD
 		const gitHubOIDC = IAM.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
@@ -378,16 +377,23 @@ export class AwsDevHourStack extends Stack {
 		})
 
 		// =====================================================================================
-		// Building S3 Bucket Create Notification to SQS
+		// Topic for sns
 		// =====================================================================================
-		imageBucket.addObjectCreatedNotification(new s3n.SqsDestination(queue), {
+		const topic = new sns.Topic(this, 'snsTopic', {
+			displayName: 'SNS Topic',
+		})
+		// =====================================================================================
+		// Building S3 Bucket Create Notification to SNS
+		// =====================================================================================
+		imageBucket.addObjectCreatedNotification(new SnsDestination(topic), {
 			prefix: `private/${cdk.Fn.join('%3A', cdk.Fn.split(':', identityPool.ref))}/photos/`,
 		})
-
 		// =====================================================================================
-		// Lambda(Rekognition) to consume messages from SQS
+		// Lambdas (Rekognition & thumbnail) to consume messages from SNS
 		// =====================================================================================
-		rekFn.addEventSource(new event_sources.SqsEventSource(queue))
+		const eventSource = new lambdaEventSources.SnsEventSource(topic)
+		rekFn.addEventSource(eventSource)
+		thumbnailFn.addEventSource(eventSource)
 	}
 }
 
