@@ -20,6 +20,8 @@ const image = path.join(process.cwd(), './e2e-tests/images/cats.jpeg')
 const outputs = await stackOutput(CFclient)<StackOutputs>(STACK_NAME)
 const key =
 	'private/' + outputs.IdentityPoolId + '/photos/' + randomUUID() + '.jpeg'
+const key2 =
+	'private/' + outputs.IdentityPoolId + '/photos/' + randomUUID() + '.jpeg'
 void describe('e2e-tests', async () => {
 	void test('uploading an image to the bucket should trigger the handler and upload labels to DynamoDB', async () => {
 		const uploadImage = await readFile(image)
@@ -64,7 +66,7 @@ void describe('e2e-tests', async () => {
 		await s3.send(
 			new PutObjectCommand({
 				Bucket: outputs.imageBucket,
-				Key: key,
+				Key: key2,
 				Body: uploadImage,
 			}),
 		)
@@ -78,7 +80,7 @@ void describe('e2e-tests', async () => {
 		//Try to get the labels from the API
 		const resFromApi = await pRetry(
 			async () =>
-				getLabelsFromApi('getLabels', key, accessToken, outputs.imageApi),
+				getLabelsFromApi('getLabels', key2, accessToken, outputs.imageApi),
 			{
 				onFailedAttempt: (error) => {
 					console.log('failed: ', error)
