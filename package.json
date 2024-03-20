@@ -45,7 +45,7 @@
     "prettier": "3.2.5",
     "tsmatchers": "5.0.2",
     "tsx": "4.7.1",
-    "typescript": "5.4.2"
+    "typescript": "5.4.3"
   },
   "dependencies": {
     "@nordicsemiconductor/from-env": "3.0.1",
