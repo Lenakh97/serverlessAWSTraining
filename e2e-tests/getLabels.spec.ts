@@ -52,13 +52,23 @@ void describe('e2e-tests', async () => {
 				retries: 5,
 			},
 		)
-		if (resFromApi[0] === undefined) {
+		if (resFromApi === undefined) {
 			assert.fail('Labels not found.')
 		}
 		console.log(resFromApi)
-		assert.equal(resFromApi[0].Object1?.S, 'Animal')
-		assert.equal(resFromApi[0].Object2?.S, 'Cat')
-		assert.equal(resFromApi[0].Object3?.S, 'Mammal')
+		const expectedRes = [
+			'City',
+			'Grass',
+			'Pet',
+			'Manx',
+			'Road',
+			'Kitten',
+			'Abyssinian',
+			'Animal',
+			'Mammal',
+			'Cat',
+		]
+		assert.deepEqual(resFromApi.labels, expectedRes)
 	})
 	void test('uploading the same image twice should give us the cached labels from the image', async () => {
 		const uploadImage = await readFile(image)
@@ -88,10 +98,9 @@ void describe('e2e-tests', async () => {
 				retries: 5,
 			},
 		)
-		if (resFromApi[0] === undefined) {
+		if (resFromApi === undefined) {
 			assert.fail('Labels not found.')
 		}
-		console.log(resFromApi)
-		assert.equal(resFromApi[0].isCached?.BOOL, true)
+		assert.equal(resFromApi.isCached, true)
 	})
 })

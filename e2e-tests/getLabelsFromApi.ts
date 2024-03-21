@@ -1,26 +1,15 @@
-type returnArray = [
-	{
-		Object9: { S: string }
-		image: { S: string }
-		Object8: { S: string }
-		Object5: { S: string }
-		Object4: { S: string }
-		Object7: { S: string }
-		Object6: { S: string }
-		Object10: { S: string }
-		Object1: { S: string }
-		Object3: { S: string }
-		Object2: { S: string }
-		isCached: { BOOL: boolean }
-	},
-]
+type ImageLabels = {
+	imageKey: string
+	labels: Array<string>
+	isCached: boolean
+}
 
 export const getLabelsFromApi = async (
 	method: string,
 	key: string,
 	accessToken: string | undefined,
 	imageApi: string,
-): Promise<returnArray> => {
+): Promise<ImageLabels> => {
 	const url = `${imageApi}/images?action=${method}&key=${key}`
 	const res = await fetch(url, {
 		method: 'get',
@@ -32,5 +21,18 @@ export const getLabelsFromApi = async (
 	if (Object.keys(data).length === 0) {
 		throw new Error('No labels found')
 	}
-	return data
+	const labels: Array<string> = []
+	const dataEntries: [string, Record<'S' | 'BOOL', string>][] = Object.entries(
+		data[0],
+	)
+	for (const [key, value] of dataEntries) {
+		if (key.includes('Object')) {
+			labels.push(value.S)
+		}
+	}
+	return {
+		imageKey: data[0].image,
+		isCached: data[0].isCached.BOOL,
+		labels,
+	}
 }
