@@ -3,6 +3,8 @@ import { App } from 'aws-cdk-lib'
 import pJSON from '../package.json'
 import { ensureGitHubOIDCProvider } from './ensureGitHubOIDCProvider.js'
 import { IAMClient } from '@aws-sdk/client-iam'
+import { AwsdevhourBackendPipelineStack } from './stacks/pipelineStack.js'
+import * as cdk from 'aws-cdk-lib'
 
 const repoUrl = new URL(pJSON.repository.url)
 const repository = {
@@ -16,6 +18,8 @@ export type Repository = {
 	owner: string
 	repo: string
 }
+
+const app = new cdk.App()
 
 export class AwsDevHourApp extends App {
 	public constructor({
@@ -37,6 +41,7 @@ export class AwsDevHourApp extends App {
 			repository,
 			gitHubOIDCProviderArn,
 		})
+		new AwsdevhourBackendPipelineStack(app, 'AwsdevhourBackendPipelineStack')
 	}
 }
 
