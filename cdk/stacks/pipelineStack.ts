@@ -1,5 +1,3 @@
-import { AwsdevhourBackendPipelineStage } from '../pipelineStage.js'
-import * as ssm from 'aws-cdk-lib/aws-ssm'
 import {
 	CodePipeline,
 	CodePipelineSource,
@@ -7,48 +5,42 @@ import {
 } from 'aws-cdk-lib/pipelines'
 import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
+import type { Repository } from '../resources/CD'
 
 export class AwsdevhourBackendPipelineStack extends cdk.Stack {
-	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-		super(scope, id, props)
+	constructor(scope: Construct, id: string, props: { repository: Repository }) {
+		super(scope, id)
 
-		const gitHubOwner = ssm.StringParameter.valueForStringParameter(
-			this,
-			'devhour-backend-git-owner',
-		)
-
-		const githubRepo = ssm.StringParameter.valueForStringParameter(
-			this,
-			'devhour-backend-git-repo',
-		)
-
-		const githubBranch = ssm.StringParameter.valueForStringParameter(
-			this,
-			'devhour-backend-git-branch',
-		)
-
-		const pipeline = new CodePipeline(this, 'Pipeline', {
+		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
 			synth: new ShellStep('Synth', {
-				input: CodePipelineSource.gitHub(
-					`${gitHubOwner}/${githubRepo}`,
-					githubBranch,
+				/*input: CodePipelineSource.gitHub(
+					`${props.repository.owner}/${props.repository.repo}`,
+					'saga',
 					{
 						authentication: cdk.SecretValue.secretsManager(
 							'devhour-backend-git-token',
 						),
 					},
+				),*/
+
+				input: CodePipelineSource.connection(
+					`${props.repository.owner}/${props.repository.repo}`,
+					'saga',
+					{
+						connectionArn: cdk.SecretValue.secretsManager(
+							'codestar-connection-MyConnection3',
+						).toString(),
+					},
 				),
 				installCommands: ['npm install -g aws-cdk'],
 				commands: [
 					'npm ci',
-					'npm run build',
 					'cd layers/sharp/nodejs && npm ci && cd ../../..',
+					'npm run build',
 					'npx cdk synth',
 				],
 			}),
 		})
-
-		pipeline.addStage(new AwsdevhourBackendPipelineStage(this, 'devStage'))
 	}
 }

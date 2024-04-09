@@ -4,12 +4,13 @@ import pJSON from '../package.json'
 import { ensureGitHubOIDCProvider } from './ensureGitHubOIDCProvider.js'
 import { IAMClient } from '@aws-sdk/client-iam'
 import { AwsdevhourBackendPipelineStack } from './stacks/pipelineStack.js'
-import * as cdk from 'aws-cdk-lib'
 
 const repoUrl = new URL(pJSON.repository.url)
 const repository = {
-	owner: repoUrl.pathname.split('/')[1] ?? 'bifravst',
-	repo: repoUrl.pathname.split('/')[2]?.replace(/\.git$/, '') ?? 'rest-echo',
+	owner: repoUrl.pathname.split('/')[1] ?? 'Lenakh97',
+	repo:
+		repoUrl.pathname.split('/')[2]?.replace(/\.git$/, '') ??
+		'serverlessAWStraining',
 }
 
 const iam = new IAMClient({})
@@ -18,8 +19,6 @@ export type Repository = {
 	owner: string
 	repo: string
 }
-
-const app = new cdk.App()
 
 export class AwsDevHourApp extends App {
 	public constructor({
@@ -41,7 +40,9 @@ export class AwsDevHourApp extends App {
 			repository,
 			gitHubOIDCProviderArn,
 		})
-		new AwsdevhourBackendPipelineStack(app, 'AwsdevhourBackendPipelineStack')
+		new AwsdevhourBackendPipelineStack(this, 'AwsdevhourBackendPipelineStack', {
+			repository,
+		})
 	}
 }
 
