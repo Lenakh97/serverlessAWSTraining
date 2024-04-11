@@ -12,41 +12,12 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: { repository: Repository }) {
 		super(scope, id)
 
-		/*const codePipelineRole = new IAM.Role(this, 'role', {
-			roleName: 'codePipelineRole',
-			assumedBy: new IAM.ServicePrincipal('codepipeline.amazonaws.com'),
-			managedPolicies: [
-				IAM.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
-			],
-		})
-		codePipelineRole.addToPolicy(
-			new PolicyStatement({
-				effect: Effect.ALLOW,
-				resources: ['*'],
-				actions: [
-					'iam:GetOpenIDConnectProvider',
-					'iam:ListOpenIDConnectProviders',
-				],
-			}),
-		)*/
 		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
-			//role: codePipelineRole.withoutPolicyUpdates(),
 			synth: new CodeBuildStep('Synth', {
-				//new ShellStep('Synth', {
-				/*input: CodePipelineSource.gitHub(
-					`${props.repository.owner}/${props.repository.repo}`,
-					'saga',
-					{
-						authentication: cdk.SecretValue.secretsManager(
-							'devhour-backend-git-token',
-						),
-					},
-				),*/
-
 				input: CodePipelineSource.connection(
 					`${props.repository.owner}/${props.repository.repo}`,
-					'deployment-pipeline',
+					'saga',
 					{
 						connectionArn: cdk.SecretValue.secretsManager(
 							'codestar-connection-MyConnection3',
@@ -62,7 +33,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 				],
 				rolePolicyStatements: [
 					new IAM.PolicyStatement({
-						resources: ['*'],
+						resources: ['arn:aws:iam::*:oidc-provider/*'],
 						actions: [
 							'iam:GetOpenIDConnectProvider',
 							'iam:ListOpenIDConnectProviders',
