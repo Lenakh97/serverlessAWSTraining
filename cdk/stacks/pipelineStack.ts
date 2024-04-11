@@ -13,7 +13,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 		super(scope, id)
 
 		new CodePipeline(this, 'Pipeline', {
-			pipelineName: 'MyPipeline',
+			pipelineName: 'MyPipeline2',
 			synth: new CodeBuildStep('Synth', {
 				input: CodePipelineSource.connection(
 					`${props.repository.owner}/${props.repository.repo}`,
