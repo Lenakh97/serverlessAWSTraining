@@ -59,7 +59,7 @@ jobs:
         run: npm test
 
       - name: Deploy solution stack
-        run: npx cdk deploy --require-approval never
+        run: npx cdk deploy ${{ env.STACK_NAME }} --require-approval never
 
       - name: Run End-to-End Tests
         run: npm run test:e2e
