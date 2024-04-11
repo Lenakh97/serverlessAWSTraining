@@ -68,7 +68,7 @@ jobs:
         if: always()
         run: |
           ./cli.sh purge-bucket-objects
-          npx cdk destroy -f
+          npx cdk destroy -f ${{ env.STACK_NAME }}
 
   release:
     needs:
