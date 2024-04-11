@@ -1,13 +1,12 @@
 import {
+	CodeBuildStep,
 	CodePipeline,
 	CodePipelineSource,
-	ShellStep,
 } from 'aws-cdk-lib/pipelines'
 import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { type Repository } from '../resources/CD.js'
 import { aws_iam as IAM } from 'aws-cdk-lib'
-import { Effect } from 'aws-cdk-lib/aws-iam'
 
 export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: { repository: Repository }) {
@@ -33,7 +32,8 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
 			//role: codePipelineRole.withoutPolicyUpdates(),
-			synth: new ShellStep('Synth', {
+			synth: new CodeBuildStep('Synth', {
+				//new ShellStep('Synth', {
 				/*input: CodePipelineSource.gitHub(
 					`${props.repository.owner}/${props.repository.repo}`,
 					'saga',
@@ -60,11 +60,8 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 					'npm run build',
 					'npx cdk synth',
 				],
-			}),
-			synthCodeBuildDefaults: {
-				rolePolicy: [
+				rolePolicyStatements: [
 					new IAM.PolicyStatement({
-						effect: Effect.ALLOW,
 						resources: ['*'],
 						actions: [
 							'iam:GetOpenIDConnectProvider',
@@ -72,7 +69,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 						],
 					}),
 				],
-			},
+			}),
 		})
 	}
 }
