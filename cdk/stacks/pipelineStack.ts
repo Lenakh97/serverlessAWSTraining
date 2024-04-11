@@ -5,14 +5,31 @@ import {
 } from 'aws-cdk-lib/pipelines'
 import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
-import type { Repository } from '../resources/CD'
+import { type Repository } from '../resources/CD.js'
+import { aws_iam as IAM } from 'aws-cdk-lib'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: { repository: Repository }) {
 		super(scope, id)
 
+		const newRole = new IAM.Role(this, 'role', {
+			roleName: 'roleName',
+			assumedBy: new IAM.ServicePrincipal('codepipeline.amazonaws.com'),
+			managedPolicies: [
+				IAM.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
+			],
+		})
+		newRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				resources: ['*'],
+				actions: ['iam:ListOpenIDConnectProviders'],
+			}),
+		)
 		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
+			role: newRole,
 			synth: new ShellStep('Synth', {
 				/*input: CodePipelineSource.gitHub(
 					`${props.repository.owner}/${props.repository.repo}`,
@@ -26,7 +43,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 
 				input: CodePipelineSource.connection(
 					`${props.repository.owner}/${props.repository.repo}`,
-					'saga',
+					'deployment-pipeline',
 					{
 						connectionArn: cdk.SecretValue.secretsManager(
 							'codestar-connection-MyConnection3',
