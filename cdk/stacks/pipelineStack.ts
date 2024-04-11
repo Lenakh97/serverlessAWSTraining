@@ -7,20 +7,20 @@ import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { type Repository } from '../resources/CD.js'
 import { aws_iam as IAM } from 'aws-cdk-lib'
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { Effect } from 'aws-cdk-lib/aws-iam'
 
 export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: { repository: Repository }) {
 		super(scope, id)
 
-		const newRole = new IAM.Role(this, 'role', {
+		/*const codePipelineRole = new IAM.Role(this, 'role', {
 			roleName: 'codePipelineRole',
 			assumedBy: new IAM.ServicePrincipal('codepipeline.amazonaws.com'),
 			managedPolicies: [
 				IAM.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
 			],
 		})
-		newRole.addToPolicy(
+		codePipelineRole.addToPolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
 				resources: ['*'],
@@ -29,10 +29,10 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 					'iam:ListOpenIDConnectProviders',
 				],
 			}),
-		)
+		)*/
 		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
-			role: newRole.withoutPolicyUpdates(),
+			//role: codePipelineRole.withoutPolicyUpdates(),
 			synth: new ShellStep('Synth', {
 				/*input: CodePipelineSource.gitHub(
 					`${props.repository.owner}/${props.repository.repo}`,
@@ -61,6 +61,18 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 					'npx cdk synth',
 				],
 			}),
+			synthCodeBuildDefaults: {
+				rolePolicy: [
+					new IAM.PolicyStatement({
+						effect: Effect.ALLOW,
+						resources: ['*'],
+						actions: [
+							'iam:GetOpenIDConnectProvider',
+							'iam:ListOpenIDConnectProviders',
+						],
+					}),
+				],
+			},
 		})
 	}
 }
