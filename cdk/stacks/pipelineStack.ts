@@ -29,7 +29,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 		)
 		new CodePipeline(this, 'Pipeline', {
 			pipelineName: 'MyPipeline',
-			role: newRole,
+			role: newRole.withoutPolicyUpdates(),
 			synth: new ShellStep('Synth', {
 				/*input: CodePipelineSource.gitHub(
 					`${props.repository.owner}/${props.repository.repo}`,
