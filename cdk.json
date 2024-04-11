@@ -1,4 +1,3 @@
 {
-  "app": "npx tsx --no-warnings --unhandled-rejections=strict cdk/cloudformation.ts",
-  "context": { "@aws-cdk/core:newStyleStackSynthesis": true }
+  "app": "npx tsx --no-warnings --unhandled-rejections=strict cdk/cloudformation.ts"
 }
