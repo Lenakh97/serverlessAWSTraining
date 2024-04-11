@@ -13,11 +13,11 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 		super(scope, id)
 
 		new CodePipeline(this, 'Pipeline', {
-			pipelineName: 'MyPipeline2',
+			pipelineName: 'MyPipeline',
 			synth: new CodeBuildStep('Synth', {
 				input: CodePipelineSource.connection(
 					`${props.repository.owner}/${props.repository.repo}`,
-					'deployment-pipeline',
+					'saga',
 					{
 						connectionArn: cdk.SecretValue.secretsManager(
 							'codestar-connection-MyConnection3',
