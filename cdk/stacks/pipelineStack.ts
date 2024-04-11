@@ -14,7 +14,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 		super(scope, id)
 
 		const newRole = new IAM.Role(this, 'role', {
-			roleName: 'roleName',
+			roleName: 'codePipelineRole',
 			assumedBy: new IAM.ServicePrincipal('codepipeline.amazonaws.com'),
 			managedPolicies: [
 				IAM.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
