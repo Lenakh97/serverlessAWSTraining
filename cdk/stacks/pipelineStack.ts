@@ -17,7 +17,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 			synth: new CodeBuildStep('Synth', {
 				input: CodePipelineSource.connection(
 					`${props.repository.owner}/${props.repository.repo}`,
-					'saga',
+					'deployment-pipeline',
 					{
 						connectionArn: cdk.SecretValue.secretsManager(
 							'codestar-connection-MyConnection3',
