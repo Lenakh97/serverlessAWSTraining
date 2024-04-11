@@ -24,7 +24,10 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 			new PolicyStatement({
 				effect: Effect.ALLOW,
 				resources: ['*'],
-				actions: ['iam:ListOpenIDConnectProviders'],
+				actions: [
+					'iam:GetOpenIDConnectProvider',
+					'iam:ListOpenIDConnectProviders',
+				],
 			}),
 		)
 		new CodePipeline(this, 'Pipeline', {
