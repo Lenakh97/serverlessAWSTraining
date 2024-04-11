@@ -59,7 +59,7 @@ jobs:
         run: npm test
 
       - name: Deploy solution stack
-        run: npx cdk deploy --require-approval never
+        run: npx cdk deploy ${{ env.STACK_NAME }} --require-approval never
 
       - name: Run End-to-End Tests
         run: npm run test:e2e
@@ -68,7 +68,7 @@ jobs:
         if: always()
         run: |
           ./cli.sh purge-bucket-objects
-          npx cdk destroy -f
+          npx cdk destroy -f ${{ env.STACK_NAME }}
 
   release:
     needs:
