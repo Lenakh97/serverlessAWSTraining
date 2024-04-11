@@ -61,3 +61,29 @@ CI_ROLE_ARN=`aws cloudformation describe-stacks --stack-name ${STACK_NAME:-AwsDe
 gh variable set AWS_REGION --env ci --body "${AWS_REGION}"
 gh secret set AWS_ROLE --env ci --body "${CI_ROLE_ARN}"
 ```
+
+## Deployment Pipeline
+
+To use the deployment pipeline you need to set up a
+[connection](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create-github.html).
+
+This can be done in the CLI:
+
+```bash
+aws codeconnections create-connection --provider-type GitHub --connection-name MyConnection
+```
+
+This will return the ConnectionArn in the following format
+
+{ "ConnectionArn":
+"arn:aws:codeconnections:us-west-2:account_id:connection/aEXAMPLE-8aad-4d5d-8878-dfcab0bc441f"
+}
+
+This ARN is then placed in secrets manager:
+
+```bash
+aws secretsmanager create-secret --name <name> --secret-string <secret>
+```
+
+To finish the connection you need to use the
+[console](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-update.html).
