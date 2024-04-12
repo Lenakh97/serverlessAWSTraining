@@ -51,6 +51,10 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 						resources: ['*'],
 						actions: ['s3:*Object', 's3:ListBucket', 's3:getBucketLocation'],
 					}),
+					new IAM.PolicyStatement({
+						resources: ['arn:aws:iam::*:role/cdk-*'],
+						actions: ['sts:AssumeRole'],
+					}),
 				],
 			}),
 		})
