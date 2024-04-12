@@ -31,7 +31,7 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 					'cd layers/sharp/nodejs && npm ci && cd ../../..',
 					'npm run build',
 					'npx cdk synth',
-					`npx cdk deploy ${STACK_NAME} -require-approval never`,
+					`npx cdk deploy ${STACK_NAME} --require-approval never`,
 				],
 				rolePolicyStatements: [
 					new IAM.PolicyStatement({
