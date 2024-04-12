@@ -41,6 +41,12 @@ export class AwsdevhourBackendPipelineStack extends cdk.Stack {
 							'iam:ListOpenIDConnectProviders',
 						],
 					}),
+					new IAM.PolicyStatement({
+						resources: [
+							'arn:aws:ssm:us-east-2:*:parameter/cdk-bootstrap/hnb659fds/version',
+						],
+						actions: ['ssm:GetParameter'],
+					}),
 				],
 			}),
 		})
