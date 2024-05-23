@@ -44,7 +44,7 @@
     "p-retry": "6.2.0",
     "prettier": "3.2.5",
     "tsmatchers": "5.0.2",
-    "tsx": "4.10.5",
+    "tsx": "4.11.0",
     "typescript": "5.4.5"
   },
   "dependencies": {
