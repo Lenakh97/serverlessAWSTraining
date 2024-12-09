@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "3.699.0",
-    "@aws-sdk/client-cognito-identity-provider": "3.699.0",
+    "@aws-sdk/client-cognito-identity-provider": "3.708.0",
     "@aws-sdk/client-dynamodb": "3.705.0",
     "@aws-sdk/client-iam": "3.699.0",
     "@aws-sdk/client-rekognition": "3.699.0",
